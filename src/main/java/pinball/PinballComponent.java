@@ -8,22 +8,23 @@ import java.awt.*;
 
 public class PinballComponent extends JComponent {
 
-    private static final float WIDTH = 900;
-    private static final float HEIGHT = 1300;
+    private static final float WIDTH = 1000;
+    private static final float HEIGHT = 1400;
 
     private static final float BOX_TO_SCREEN = 10f;
     private static final float SCREEN_TO_BOX = 1f / BOX_TO_SCREEN;
 
     private final World world;
-    private final Body bottom, right, left, top;
+    private final Body bottom, right, left, top, divider;
 
-    public PinballComponent()
+    PinballComponent()
     {
         world = new World(new Vector2(0, 9.8f), false);
         bottom = createWall(100f * SCREEN_TO_BOX, (HEIGHT + 100) * SCREEN_TO_BOX, WIDTH * SCREEN_TO_BOX, 1f * SCREEN_TO_BOX);
         top = createWall(100f * SCREEN_TO_BOX, 100f * SCREEN_TO_BOX, WIDTH * SCREEN_TO_BOX, 1f * SCREEN_TO_BOX);
-        right = createWall(100f * SCREEN_TO_BOX, 100f * SCREEN_TO_BOX, 1f * SCREEN_TO_BOX, HEIGHT * SCREEN_TO_BOX);
-        left = createWall((WIDTH + 100) * SCREEN_TO_BOX, 100f * SCREEN_TO_BOX, 1f * SCREEN_TO_BOX, HEIGHT * SCREEN_TO_BOX) ;
+        left = createWall(100f * SCREEN_TO_BOX, 100f * SCREEN_TO_BOX, 1f * SCREEN_TO_BOX, HEIGHT * SCREEN_TO_BOX);
+        right = createWall((WIDTH + 100) * SCREEN_TO_BOX, 100f * SCREEN_TO_BOX, 1f * SCREEN_TO_BOX, HEIGHT * SCREEN_TO_BOX) ;
+        divider = createWall(WIDTH * SCREEN_TO_BOX, 300f * SCREEN_TO_BOX, 1f * SCREEN_TO_BOX, (HEIGHT - 200f) * SCREEN_TO_BOX);
     }
 
     private Body createWall(float vX, float vY, float hX, float hY)
@@ -62,5 +63,9 @@ public class PinballComponent extends JComponent {
         graphics.fillRect((int)(left.getPosition().x * BOX_TO_SCREEN),
                 (int)(left.getPosition().y * BOX_TO_SCREEN),
                 1, (int)HEIGHT);
+
+        graphics.fillRect((int)(divider.getPosition().x * BOX_TO_SCREEN),
+                (int)(divider.getPosition().y * BOX_TO_SCREEN),
+                1, (int)HEIGHT - 200);
     }
 }
