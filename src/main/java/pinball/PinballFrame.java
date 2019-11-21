@@ -7,7 +7,7 @@ public class PinballFrame extends JFrame {
 
     private PinballFrame()
     {
-        setSize(1200, 1600);
+        setSize(1200, 1750);
         setTitle("Pinball");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
