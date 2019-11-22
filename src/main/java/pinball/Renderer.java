@@ -10,7 +10,7 @@ import java.awt.*;
 
 public class Renderer {
 
-    private World world;
+    private final World world;
     private final float BOX2D_TO_SCREEN;
 
     public Renderer(World world, float box2DToScreenRatio) {
