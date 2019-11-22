@@ -1,0 +1,88 @@
+{
+  "bodies": [
+    {
+      "bodyType": "BOTTOM_WALL",
+      "shapeType": "BOX",
+      "coordinates": [100,1600],
+      "length": 1000,
+      "height": 1
+    },
+    {
+      "bodyType": "TOP_WALL",
+      "shapeType": "BOX",
+      "coordinates": [100,100],
+      "length": 1000,
+      "height": 1
+    },
+    {
+      "bodyType": "LEFT_WALL",
+      "shapeType": "BOX",
+      "coordinates": [100,100],
+      "length": 1,
+      "height": 1500
+    },
+    {
+      "bodyType": "RIGHT_WALL",
+      "shapeType": "BOX",
+      "coordinates": [1100,100],
+      "length": 1.0,
+      "height": 1500
+    },
+    {
+      "bodyType": "DIVIDER_WALL",
+      "shapeType": "BOX",
+      "coordinates": [1025,300],
+      "length": 1.0,
+      "height": 1300
+    },
+    {
+      "bodyType": "TOP_RIGHT_CORNER",
+      "shapeType": "LINE",
+      "coordinates": [950,100],
+      "length": 175,
+      "angle": 30
+    },
+    {
+      "bodyType": "TOP_LEFT_CORNER",
+      "shapeType": "LINE",
+      "coordinates": [250,100],
+      "length": 175,
+      "angle": 150
+    },
+    {
+      "bodyType": "BOTTOM_RIGHT_CORNER",
+      "shapeType": "LINE",
+      "coordinates": [1025,1230],
+      "length": 350,
+      "angle": 145
+    },
+    {
+      "bodyType": "BOTTOM_LEFT_CORNER",
+      "shapeType": "LINE",
+      "coordinates": [100,1230],
+      "length": 350,
+      "angle": 35
+    },
+
+    {
+      "bodyType": "RIGHT_FLIPPER",
+      "shapeType": "LINE",
+      "coordinates": [735,1435],
+      "length": 120,
+      "angle": 145
+    },
+    {
+      "bodyType": "LEFT_FLIPPER",
+      "shapeType": "LINE",
+      "coordinates": [390,1435],
+      "length": 120,
+      "angle": 35
+    },
+    {
+      "bodyType": "BALL",
+      "shapeType": "CIRCLE",
+      "coordinates": [1060,1565],
+      "radius": 30
+    }
+  ]
+}
