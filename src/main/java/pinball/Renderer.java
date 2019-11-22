@@ -50,7 +50,7 @@ public class Renderer {
                 diameter);
     }
 
-    private void renderPolygon(Graphics2D graphics2D, PolygonShape polygon, Vector2 position) {
+    private void renderPolygon(Graphics2D graphics2D, PolygonShape polygon, Vector2 position) {  // TODO handle rotations in a different PR
         int vertices = polygon.getVertexCount();
         if (vertices > 0) {
             int[] xCoordinates = new int[vertices];
