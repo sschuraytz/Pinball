@@ -6,7 +6,6 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
-
 import java.awt.*;
 
 public class Renderer {
@@ -37,7 +36,7 @@ public class Renderer {
                 renderCircle(graphics2D, position, (int) shape.getRadius());
                 break;
             case Polygon:
-                renderPolygon(graphics2D, (PolygonShape) shape, position, angle);
+                renderPolygon(graphics2D, (PolygonShape) shape, position);
                 break;
         }
     }
@@ -51,23 +50,17 @@ public class Renderer {
                 diameter);
     }
 
-    private void renderPolygon(Graphics2D graphics2D, PolygonShape polygon, Vector2 position, float angle) {
+    private void renderPolygon(Graphics2D graphics2D, PolygonShape polygon, Vector2 position) {
         int vertices = polygon.getVertexCount();
         if (vertices > 0) {
             int[] xCoordinates = new int[vertices];
             int[] yCoordinates = new int[vertices];
             Vector2 vector = new Vector2();
-            int startingX = Math.round(position.x * BOX2D_TO_SCREEN);
-            int startingY = Math.round(position.y * BOX2D_TO_SCREEN);
-            xCoordinates[0] = startingX;
-            yCoordinates[0] = startingY;
 
-            for (int vertex = 1; vertex < vertices; vertex++) {
+            for (int vertex = 0; vertex < vertices; vertex++) {
                 polygon.getVertex(vertex, vector);
-                int vectorLength = Math.round(vector.x * BOX2D_TO_SCREEN);
-                int vectorHeight = Math.round(vector.y * BOX2D_TO_SCREEN);
-                xCoordinates[vertex] = xCoordinates[vertex - 1] + vectorLength;
-                yCoordinates[vertex] = yCoordinates[vertex - 1] + vectorHeight;
+                xCoordinates[vertex] = Math.round((vector.x + position.x) * BOX2D_TO_SCREEN);
+                yCoordinates[vertex] = Math.round((vector.y + position.y) * BOX2D_TO_SCREEN);
             }
             graphics2D.drawPolygon(xCoordinates, yCoordinates, vertices);
         }
