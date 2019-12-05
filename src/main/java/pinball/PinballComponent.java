@@ -5,8 +5,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class PinballComponent extends JPanel {
 
@@ -52,7 +50,7 @@ public class PinballComponent extends JPanel {
         leftFlipper = createDiagonalLine(390 * SCREEN_TO_BOX, 1435 * SCREEN_TO_BOX, FLIPPER_LENGTH * SCREEN_TO_BOX, 35);
 
         //cue the ball
-        ball = createBall(1060 * SCREEN_TO_BOX, (HEIGHT + 100) * SCREEN_TO_BOX, radius * SCREEN_TO_BOX);
+        ball = createBall(1060 * SCREEN_TO_BOX, bottom.getPosition().y, radius * SCREEN_TO_BOX);
 
         JButton button = new JButton("Launch!");
         add(button);
