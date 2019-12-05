@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
+import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
@@ -27,18 +28,21 @@ public class RendererTest {
         Renderer renderer = new Renderer(world, 10);
 
         CircleShape circleShape = mock(CircleShape.class);
-        FixtureDef fixtureDef = mock(FixtureDef.class);
-        fixtureDef.shape = circleShape;
         Body body = mock(Body.class);
+        Fixture fixture = mock(Fixture.class);
         Graphics2D graphics2D = mock(Graphics2D.class);
+        Array<Fixture> fixtureArray = new Array<Fixture>();
+        fixtureArray.add(fixture);
 
-        doAnswer((i) -> {
-            Array<Body> bodies = new Array<>();
+        doAnswer((invocation) -> {
+            Array<Body> bodies = invocation.getArgument(0);
             bodies.add(body);
-            return bodies;
+            return null;
         }).when(world).getBodies(any());
+
         doReturn(new Vector2(10, 10)).when(body).getPosition();
-        //doReturn(circleShape).when(body).getFixtureList();
+        doReturn(circleShape).when(fixture).getShape();
+        doReturn(fixtureArray).when(body).getFixtureList();
         doReturn(Shape.Type.Circle).when(circleShape).getType();
 
         //when
