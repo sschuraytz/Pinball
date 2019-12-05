@@ -6,15 +6,10 @@ public class PinballKeyListeners implements KeyListener {
 
     public PinballKeyListeners(PinballController controller) {
         pinballController = controller;
-
     }
-
-
-
 
     @Override
     public void keyTyped(KeyEvent e) {
-
     }
 
     @Override
@@ -29,8 +24,6 @@ public class PinballKeyListeners implements KeyListener {
         else if (keyCode == KeyEvent.VK_UP){
             pinballController.ballPressure();
         }
-
-
     }
 
     @Override
@@ -39,6 +32,5 @@ public class PinballKeyListeners implements KeyListener {
         if (keyCode == KeyEvent.VK_UP){
             pinballController.releaseball();
         }
-
     }
 }

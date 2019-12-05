@@ -8,12 +8,9 @@ public class PinballFrame extends JFrame {
     PinballController pinballController = new PinballController();
 
     public PinballFrame (){
-
         setTitle("Pinball");
         setSize(600,800);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
-
         pinballKeyListeners = new PinballKeyListeners(pinballController);
         this.addKeyListener(pinballKeyListeners);
         JPanel root = new JPanel();
@@ -23,7 +20,5 @@ public class PinballFrame extends JFrame {
         setContentPane(root);
 
     }
-
-
-    }
+}
 
