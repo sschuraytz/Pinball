@@ -17,7 +17,7 @@ public enum BodyType {
 
     private String bodyName;
 
-    private BodyType(String shapeName) {
+    private BodyType(String bodyName) {
         this.bodyName = bodyName;
     }
 
