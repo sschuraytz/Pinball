@@ -3,16 +3,17 @@ package pinball;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
-
-import javax.swing.JComponent;
+import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class PinballComponent extends JComponent {
+public class PinballComponent extends JPanel {
 
     private long time;
 
     private static final float WIDTH = 1000;
-    private static final float HEIGHT = 1500;
+    private static final float HEIGHT = 500;
 
     private static final float CORNER_LENGTH = 175;
     private static final float BASE_LENGTH = 350;
@@ -51,7 +52,16 @@ public class PinballComponent extends JComponent {
         leftFlipper = createDiagonalLine(390 * SCREEN_TO_BOX, 1435 * SCREEN_TO_BOX, FLIPPER_LENGTH * SCREEN_TO_BOX, 35);
 
         //cue the ball
-        ball = createBall(1060 * SCREEN_TO_BOX, 1565 * SCREEN_TO_BOX, radius * SCREEN_TO_BOX);
+        ball = createBall(1060 * SCREEN_TO_BOX, (HEIGHT + 100) * SCREEN_TO_BOX, radius * SCREEN_TO_BOX);
+
+        JButton button = new JButton("Launch!");
+        add(button);
+        button.addActionListener(e ->
+                ball.applyLinearImpulse(
+                        0 * SCREEN_TO_BOX,
+                        500 * SCREEN_TO_BOX,
+                        ball.getPosition().x,
+                        ball.getPosition().y, true));
     }
 
     private Body createWall(float vX, float vY, float length, float height)
