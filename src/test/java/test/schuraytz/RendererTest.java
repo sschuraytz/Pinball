@@ -5,15 +5,40 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
 import static org.mockito.Mockito.*;
+
 import pinball.Renderer;
 import java.awt.Graphics2D;
 
-
 public class RendererTest {
+
+    @Test
+    public void render() {
+        //given
+        World mWorld = mock(World.class);      // Can only mock a final class once manually activate the extension option -  https://antonioleiva.com/mockito-2-kotlin/
+        Renderer renderer = new Renderer(mWorld, 10);
+
+        PolygonShape mShape = mock(PolygonShape.class);
+        FixtureDef mFixtureDef = mock(FixtureDef.class);
+        mFixtureDef.shape = mShape;
+        Body mBody = mock(Body.class);
+        Graphics2D mGraphic = mock(Graphics2D.class);
+
+        //when
+        renderer.render(mGraphic);
+
+        //then
+        doReturn(new Vector2(10, 10)).when(mBody).getPosition();
+        verify(mGraphic).fillOval(Math.round(mBody.getPosition().x * 10f - 10),
+                Math.round(mBody.getPosition().y * 10f - 10),
+                10 * 2, 10 * 2
+        );
+    }
 
     @Test
     public void render_circle() {
@@ -32,7 +57,7 @@ public class RendererTest {
         circle.setPosition(new Vector2(radius, radius));
         circle.setRadius(radius * SCREEN_TO_BOX);
         fixtureDef.shape = circle;
-        
+
         Body circleBody = world.createBody(bodyDef);
         circleBody.createFixture(fixtureDef);
 
@@ -47,9 +72,6 @@ public class RendererTest {
                 Math.round(circleBody.getPosition().y * BOX_TO_SCREEN - radius),
                 radius * 2, radius * 2
                 );
-
-
-
     }
 
 }
