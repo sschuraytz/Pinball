@@ -1,12 +1,13 @@
 package test.schuraytz;
 
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Array;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -23,7 +24,7 @@ public class RendererTest {
         World mWorld = mock(World.class);      // Can only mock a final class once manually activate the extension option -  https://antonioleiva.com/mockito-2-kotlin/
         Renderer renderer = new Renderer(mWorld, 10);
 
-        PolygonShape mShape = mock(PolygonShape.class);
+        CircleShape mShape = mock(CircleShape.class);
         FixtureDef mFixtureDef = mock(FixtureDef.class);
         mFixtureDef.shape = mShape;
         Body mBody = mock(Body.class);
@@ -33,6 +34,12 @@ public class RendererTest {
         renderer.render(mGraphic);
 
         //then
+        doAnswer((i) -> {
+            Array<Body> bodies = new Array<>();
+            bodies.add(mBody);
+            return null;
+        }).when(mWorld.getBodies(Array.class));
+
         doReturn(new Vector2(10, 10)).when(mBody).getPosition();
         verify(mGraphic).fillOval(Math.round(mBody.getPosition().x * 10f - 10),
                 Math.round(mBody.getPosition().y * 10f - 10),
