@@ -32,6 +32,7 @@ public class PinballComponent extends JComponent {
     PinballComponent()
     {
         world = new World(new Vector2(0, 9.8f), false);
+        world.setContactListener(new MyContactListener(this));
 
         //set up all horizontal and vertical lines
         bottom = createWall(100f * SCREEN_TO_BOX, (HEIGHT + 100) * SCREEN_TO_BOX, WIDTH * SCREEN_TO_BOX, 1f * SCREEN_TO_BOX);
@@ -39,6 +40,9 @@ public class PinballComponent extends JComponent {
         left = createWall(100f * SCREEN_TO_BOX, 100f * SCREEN_TO_BOX, 1f * SCREEN_TO_BOX, HEIGHT * SCREEN_TO_BOX);
         right = createWall((WIDTH + 100) * SCREEN_TO_BOX, 100f * SCREEN_TO_BOX, 1f * SCREEN_TO_BOX, HEIGHT * SCREEN_TO_BOX) ;
         divider = createWall(1025 * SCREEN_TO_BOX, 300f * SCREEN_TO_BOX, 1f * SCREEN_TO_BOX, (HEIGHT - 200f) * SCREEN_TO_BOX);
+
+        bottom.setUserData("is bottom");
+
 
         //set up all diagonal lines
         topRightCorner = createDiagonalLine(950f * SCREEN_TO_BOX, 100f * SCREEN_TO_BOX, CORNER_LENGTH * SCREEN_TO_BOX, 30);
