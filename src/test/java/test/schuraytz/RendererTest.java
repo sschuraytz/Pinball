@@ -2,17 +2,12 @@ package test.schuraytz;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.Fixture;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import static com.badlogic.gdx.physics.box2d.Manifold.ManifoldType.Circle;
 import static org.mockito.Mockito.*;
 
 import pinball.Renderer;
@@ -31,7 +26,7 @@ public class RendererTest {
         Body body = mock(Body.class);
         Fixture fixture = mock(Fixture.class);
         Graphics2D graphics2D = mock(Graphics2D.class);
-        Array<Fixture> fixtureArray = new Array<Fixture>();
+        Array<Fixture> fixtureArray = new Array<>();
         fixtureArray.add(fixture);
 
         doAnswer((invocation) -> {
@@ -41,6 +36,7 @@ public class RendererTest {
         }).when(world).getBodies(any());
 
         doReturn(new Vector2(10, 10)).when(body).getPosition();
+        doReturn((float) 8.0).when(circleShape).getRadius();
         doReturn(circleShape).when(fixture).getShape();
         doReturn(fixtureArray).when(body).getFixtureList();
         doReturn(Shape.Type.Circle).when(circleShape).getType();
@@ -49,7 +45,6 @@ public class RendererTest {
         renderer.render(graphics2D);
 
         //then
-        verify(graphics2D).fillOval(10, 10, 20, 20);
-
+        verify(graphics2D).fillOval(20, 20, 160, 160);
     }
 }
