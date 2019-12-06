@@ -1,3 +1,7 @@
+package pinball;
+
+import pinball.PinballController;
+
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
