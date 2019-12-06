@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
-
 public class PinballComponent extends JComponent {
 
     private long time;
@@ -40,6 +39,7 @@ public class PinballComponent extends JComponent {
     PinballComponent()
     {
         world = new World(new Vector2(0, 9.8f), false);
+
 
         Gson gson = new Gson();
 
@@ -85,10 +85,12 @@ public class PinballComponent extends JComponent {
         FixtureDef fixtureDef = new FixtureDef();
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(length * SCREEN_TO_BOX, height * SCREEN_TO_BOX);
+
         fixtureDef.shape = shape;
         fixtureDef.restitution = 1;
         wall.createFixture(fixtureDef);
         return wall;
+
     }
 
     private Body createDiagonalLine(float[] coordinates, float length, int angle)
@@ -125,6 +127,7 @@ public class PinballComponent extends JComponent {
         return ball;
     }
 
+
     //All this drawing code is severely repetitive and deserves to be refactored.
     //But hey, once the renderer comes around, we won't need it anyway.
     @Override
@@ -135,6 +138,7 @@ public class PinballComponent extends JComponent {
         long currentTime = System.currentTimeMillis();
         world.step((currentTime - time)/1000f, 6, 2);
         time = currentTime;
+
 
         BodyDTO[] _bodiesDTO = bodiesDTO.getBodies();
 
@@ -181,3 +185,4 @@ public class PinballComponent extends JComponent {
         repaint();
     }
 }
+
