@@ -33,7 +33,8 @@ public class PinballComponent extends JComponent {
     private final int radius = 30;
 
     private final World world;
-    private HashMap<BodyType, Body> bodies = new HashMap<>();
+    private ArrayList<Body> bodies = new ArrayList<>();
+    private BodiesDTO bodiesDTO;
 
 
     PinballComponent()
@@ -44,10 +45,10 @@ public class PinballComponent extends JComponent {
 
         try (Reader reader = new FileReader("bodies.json"))
         {
-            BodiesDTO bodiesDTO = gson.fromJson(reader, BodiesDTO.class);
-            for(BodyDTO bodyDTO : bodiesDTO.bodies)
+            bodiesDTO = gson.fromJson(reader, BodiesDTO.class);
+            for(BodyDTO bodyDTO : bodiesDTO.getBodies())
             {
-                bodies.put(bodyDTO.bodyType, createBody(bodyDTO));
+                bodies.add(createBody(bodyDTO));
             }
         }
         catch (IOException e)
@@ -59,16 +60,16 @@ public class PinballComponent extends JComponent {
     {
         Body body = null;
 
-        switch(bodyDTO.shapeType)
+        switch(bodyDTO.getShapeType())
         {
             case BOX:
-                body = createWall(bodyDTO.coordinates, bodyDTO.length, bodyDTO.height);
+                body = createWall(bodyDTO.getCoordinates(), bodyDTO.getLength(), bodyDTO.getHeight());
                 break;
             case LINE:
-                body = createDiagonalLine(bodyDTO.coordinates, bodyDTO.length, bodyDTO.angle);
+                body = createDiagonalLine(bodyDTO.getCoordinates(), bodyDTO.getLength(), bodyDTO.getAngle());
                 break;
             case CIRCLE:
-                body = createBall(bodyDTO.coordinates, bodyDTO.radius);
+                body = createBall(bodyDTO.getCoordinates(), bodyDTO.getRadius());
                 break;
         }
         return body;
@@ -135,66 +136,36 @@ public class PinballComponent extends JComponent {
         world.step((currentTime - time)/1000f, 6, 2);
         time = currentTime;
 
-        Set<BodyType> bodyTypes = bodies.keySet();
-        Iterator<BodyType> iterator = bodyTypes.iterator();
-        while(iterator.hasNext())
+        BodyDTO[] _bodiesDTO = bodiesDTO.getBodies();
+
+        for(int ix = 0; ix < this.bodies.size(); ++ix)
         {
-            BodyType next = iterator.next();
-            Body body = bodies.get(next);
+            BodyType next = _bodiesDTO[ix].getBodyType();
+            Body body = this.bodies.get(ix);
             Vector2 position = body.getPosition();
             switch(next.getBodyName())
             {
-                case "BOTTOM_WALL":
+                case "WALL":
+                    float length = _bodiesDTO[ix].getLength();
+                    float height = _bodiesDTO[ix].getHeight();
                     graphics.fillRect((int)(position.x * BOX_TO_SCREEN),
-                    (int)(position.y * BOX_TO_SCREEN), (int)WIDTH, 1);
+                            (int)(position.y * BOX_TO_SCREEN), (int)length, (int)height);
                     break;
-                case "LEFT_WALL":
-                    graphics.fillRect((int)(position.x * BOX_TO_SCREEN),
-                    (int)(position.y * BOX_TO_SCREEN), 1, (int)HEIGHT);
-                    break;
-                case "RIGHT_WALL":
-                    graphics.fillRect((int)(position.x * BOX_TO_SCREEN),
-                    (int)(position.y * BOX_TO_SCREEN), 1, (int)HEIGHT);
-                    break;
-                case "TOP_WALL":
-                    graphics.fillRect((int)(position.x * BOX_TO_SCREEN),
-                    (int)(position.y * BOX_TO_SCREEN), (int)WIDTH, 1);
-                    break;
-                case "DIVIDER_WALL":
-                    graphics.fillRect((int)(position.x * BOX_TO_SCREEN),
-                    (int)(position.y * BOX_TO_SCREEN),1, (int)HEIGHT - 200);
-                    break;
-                case "BOTTOM_LEFT_CORNER":
+
+                case "BOTTOM_CORNER":
                     graphics.drawLine((int)(position.x * BOX_TO_SCREEN),
                     (int)(position.y * BOX_TO_SCREEN),
                     (int)((position.x * BOX_TO_SCREEN) + BASE_LENGTH * Math.cos(body.getAngle())),
                     (int)((position.y * BOX_TO_SCREEN) + BASE_LENGTH * Math.sin(body.getAngle())));
                     break;
-                case "TOP_RIGHT_CORNER":
+
+                case "TOP_CORNER":
                     graphics.drawLine((int)(position.x * BOX_TO_SCREEN),
                     (int)(position.y * BOX_TO_SCREEN),
                     (int)((position.x * BOX_TO_SCREEN) + CORNER_LENGTH * Math.cos(body.getAngle())),
                     (int)((position.y * BOX_TO_SCREEN) + CORNER_LENGTH * Math.sin(body.getAngle())));
                     break;
-                case "TOP_LEFT_CORNER":
-                    graphics.drawLine((int)(position.x * BOX_TO_SCREEN),
-                    (int)(position.y * BOX_TO_SCREEN),
-                    (int)((position.x * BOX_TO_SCREEN) + CORNER_LENGTH * Math.cos(body.getAngle())),
-                    (int)((position.y * BOX_TO_SCREEN) + CORNER_LENGTH * Math.sin(body.getAngle())));
-                    break;
-                case "BOTTOM_RIGHT_CORNER":
-                    graphics.drawLine((int)(position.x * BOX_TO_SCREEN),
-                    (int)(position.y * BOX_TO_SCREEN),
-                    (int)((position.x * BOX_TO_SCREEN) + BASE_LENGTH * Math.cos(body.getAngle())),
-                    (int)((position.y * BOX_TO_SCREEN) + BASE_LENGTH * Math.sin(body.getAngle())));
-                    break;
-                case "RIGHT_FLIPPER":
-                    graphics.drawLine((int)(position.x * BOX_TO_SCREEN),
-                    (int)(position.y * BOX_TO_SCREEN),
-                    (int)((position.x * BOX_TO_SCREEN) + FLIPPER_LENGTH * Math.cos(body.getAngle())),
-                    (int)((position.y * BOX_TO_SCREEN) + FLIPPER_LENGTH * Math.sin(body.getAngle())));
-                    break;
-                case "LEFT_FLIPPER":
+                case "FLIPPER":
                     graphics.drawLine((int)(position.x * BOX_TO_SCREEN),
                     (int)(position.y * BOX_TO_SCREEN),
                     (int)((position.x * BOX_TO_SCREEN) + FLIPPER_LENGTH * Math.cos(body.getAngle())),
