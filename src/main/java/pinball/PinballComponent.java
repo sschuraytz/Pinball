@@ -3,6 +3,8 @@ package pinball;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.physics.box2d.joints.RevoluteJoint;
+import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef;
 
 import javax.swing.JComponent;
 import java.awt.*;
@@ -47,11 +49,43 @@ public class PinballComponent extends JComponent {
         bottomLeftBase = createDiagonalLine(100f * SCREEN_TO_BOX, 1230f * SCREEN_TO_BOX, BASE_LENGTH * SCREEN_TO_BOX, 35);
 
         //set up flippers (static for now, but soon to be dynamic and jointed)
-        rightFlipper = createDiagonalLine(735 * SCREEN_TO_BOX, 1435 * SCREEN_TO_BOX, FLIPPER_LENGTH * SCREEN_TO_BOX, 145);
-        leftFlipper = createDiagonalLine(390 * SCREEN_TO_BOX, 1435 * SCREEN_TO_BOX, FLIPPER_LENGTH * SCREEN_TO_BOX, 35);
+//        rightFlipper = createDiagonalLine(735 * SCREEN_TO_BOX, 1435 * SCREEN_TO_BOX, FLIPPER_LENGTH * SCREEN_TO_BOX, 145);
+//        leftFlipper = createDiagonalLine(390 * SCREEN_TO_BOX, 1435 * SCREEN_TO_BOX, FLIPPER_LENGTH * SCREEN_TO_BOX, 35);
+
+        rightFlipper = createFlipper(735 * SCREEN_TO_BOX, 1435 * SCREEN_TO_BOX, FLIPPER_LENGTH * SCREEN_TO_BOX, 145);
+        leftFlipper = createFlipper(390 * SCREEN_TO_BOX, 1435 * SCREEN_TO_BOX, FLIPPER_LENGTH * SCREEN_TO_BOX, 35);
+
+        createFlipperJoint(bottomRightBase, rightFlipper);
+        createFlipperJoint(bottomLeftBase, leftFlipper);
 
         //cue the ball
         ball = createBall(1060 * SCREEN_TO_BOX, 1565 * SCREEN_TO_BOX, radius * SCREEN_TO_BOX);
+    }
+
+    private void createFlipperJoint(Body base, Body flipper)
+    {
+        RevoluteJointDef revoluteJointDef = new RevoluteJointDef();
+        revoluteJointDef.initialize(base, flipper, base.getWorldCenter());
+        RevoluteJoint joint = (RevoluteJoint) world.createJoint(revoluteJointDef);
+        joint.enableMotor(true);
+        joint.setMaxMotorTorque(100);
+    }
+
+    private Body createFlipper(float vX, float vY, float length, int angle)
+    {
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.position.set(new Vector2(vX, vY));
+        bodyDef.type = BodyDef.BodyType.DynamicBody;
+        bodyDef.angle = angle * (MathUtils.PI/180);
+        Body flipper = world.createBody(bodyDef);
+
+        FixtureDef fixtureDef = new FixtureDef();
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(length, 1);
+        fixtureDef.shape = shape;
+        fixtureDef.restitution = 1;
+        flipper.createFixture(fixtureDef);
+        return flipper;
     }
 
     private Body createWall(float vX, float vY, float length, float height)
