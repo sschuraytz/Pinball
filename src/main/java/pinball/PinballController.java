@@ -1,3 +1,5 @@
+package pinball;
+
 public class PinballController {
     protected void releaseball() {
         System.out.println("release ball");
