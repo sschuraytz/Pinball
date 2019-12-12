@@ -12,7 +12,7 @@ public class PinballComponent extends JComponent {
     private long time;
 
     private static final float WIDTH = 1000;
-    private static final float HEIGHT = 1500;
+    private static final float HEIGHT = 500;
 
     private static final float CORNER_LENGTH = 175;
     private static final float BASE_LENGTH = 350;
@@ -25,13 +25,17 @@ public class PinballComponent extends JComponent {
 
     private final World world;
     private final Body bottom, right, left, top, divider;
-    private final Body topRightCorner, topLeftCorner, bottomRightBase, bottomLeftBase;
-    private final Body rightFlipper, leftFlipper;
-    private final Body ball;
+    private final Body topRightCorner
+            // , topLeftCorner, bottomRightBase, bottomLeftBase
+            ;
+    // private final Body rightFlipper, leftFlipper;
+    // private final Body ball;
+    private final Renderer renderer;
 
     PinballComponent()
     {
         world = new World(new Vector2(0, 9.8f), false);
+        renderer = new Renderer(world, BOX_TO_SCREEN);
 
         //set up all horizontal and vertical lines
         bottom = createWall(100f * SCREEN_TO_BOX, (HEIGHT + 100) * SCREEN_TO_BOX, WIDTH * SCREEN_TO_BOX, 1f * SCREEN_TO_BOX);
@@ -42,16 +46,16 @@ public class PinballComponent extends JComponent {
 
         //set up all diagonal lines
         topRightCorner = createDiagonalLine(950f * SCREEN_TO_BOX, 100f * SCREEN_TO_BOX, CORNER_LENGTH * SCREEN_TO_BOX, 30);
-        topLeftCorner = createDiagonalLine(250f * SCREEN_TO_BOX, 100f * SCREEN_TO_BOX, CORNER_LENGTH * SCREEN_TO_BOX, 150);
-        bottomRightBase = createDiagonalLine(1025 * SCREEN_TO_BOX, 1230f * SCREEN_TO_BOX, BASE_LENGTH * SCREEN_TO_BOX, 145);
-        bottomLeftBase = createDiagonalLine(100f * SCREEN_TO_BOX, 1230f * SCREEN_TO_BOX, BASE_LENGTH * SCREEN_TO_BOX, 35);
+        // topLeftCorner = createDiagonalLine(250f * SCREEN_TO_BOX, 100f * SCREEN_TO_BOX, CORNER_LENGTH * SCREEN_TO_BOX, 150);
+        // bottomRightBase = createDiagonalLine(1025 * SCREEN_TO_BOX, 1230f * SCREEN_TO_BOX, BASE_LENGTH * SCREEN_TO_BOX, 145);
+        // bottomLeftBase = createDiagonalLine(100f * SCREEN_TO_BOX, 1230f * SCREEN_TO_BOX, BASE_LENGTH * SCREEN_TO_BOX, 35);
 
         //set up flippers (static for now, but soon to be dynamic and jointed)
-        rightFlipper = createDiagonalLine(735 * SCREEN_TO_BOX, 1435 * SCREEN_TO_BOX, FLIPPER_LENGTH * SCREEN_TO_BOX, 145);
-        leftFlipper = createDiagonalLine(390 * SCREEN_TO_BOX, 1435 * SCREEN_TO_BOX, FLIPPER_LENGTH * SCREEN_TO_BOX, 35);
+        // rightFlipper = createDiagonalLine(735 * SCREEN_TO_BOX, 1435 * SCREEN_TO_BOX, FLIPPER_LENGTH * SCREEN_TO_BOX, 145);
+        // leftFlipper = createDiagonalLine(390 * SCREEN_TO_BOX, 1435 * SCREEN_TO_BOX, FLIPPER_LENGTH * SCREEN_TO_BOX, 35);
 
         //cue the ball
-        ball = createBall(1060 * SCREEN_TO_BOX, 1565 * SCREEN_TO_BOX, radius * SCREEN_TO_BOX);
+        // ball = createBall(1060 * SCREEN_TO_BOX, 1565 * SCREEN_TO_BOX, radius * SCREEN_TO_BOX);
     }
 
     private Body createWall(float vX, float vY, float length, float height)
@@ -105,8 +109,6 @@ public class PinballComponent extends JComponent {
         return ball;
     }
 
-    //All this drawing code is severely repetitive and deserves to be refactored.
-    //But hey, once the renderer comes around, we won't need it anyway.
     @Override
     protected void paintComponent(Graphics graphics)
     {
@@ -116,71 +118,7 @@ public class PinballComponent extends JComponent {
         world.step((currentTime - time)/1000f, 6, 2);
         time = currentTime;
 
-        //draw all 'walls'
-        graphics.fillRect((int)(bottom.getPosition().x * BOX_TO_SCREEN),
-                (int)(bottom.getPosition().y * BOX_TO_SCREEN),
-                (int)WIDTH, 1);
-
-        graphics.fillRect((int)(top.getPosition().x * BOX_TO_SCREEN),
-                (int)(top.getPosition().y * BOX_TO_SCREEN),
-                (int)WIDTH, 1);
-
-        graphics.fillRect((int)(right.getPosition().x * BOX_TO_SCREEN),
-                (int)(right.getPosition().y * BOX_TO_SCREEN),
-                1, (int)HEIGHT);
-
-        graphics.fillRect((int)(left.getPosition().x * BOX_TO_SCREEN),
-                (int)(left.getPosition().y * BOX_TO_SCREEN),
-                1, (int)HEIGHT);
-
-        graphics.fillRect((int)(divider.getPosition().x * BOX_TO_SCREEN),
-                (int)(divider.getPosition().y * BOX_TO_SCREEN),
-                1, (int)HEIGHT - 200);
-
-        //draw all diagonal lines
-        //formula for the end-point of a diagonal line:
-        //(x2, y2) = (x1 + length ⋅ cos(angle), y1 + length ⋅ sin(angle))
-        Vector2 trcPosition = topRightCorner.getPosition();
-        graphics.drawLine((int)(trcPosition.x * BOX_TO_SCREEN),
-                (int)(trcPosition.y * BOX_TO_SCREEN),
-                (int)((trcPosition.x * BOX_TO_SCREEN) + CORNER_LENGTH * Math.cos(topRightCorner.getAngle())),
-                (int)((trcPosition.y * BOX_TO_SCREEN) + CORNER_LENGTH * Math.sin(topRightCorner.getAngle())));
-
-        Vector2 tlcPosition = topLeftCorner.getPosition();
-        graphics.drawLine((int)(tlcPosition.x * BOX_TO_SCREEN),
-                (int)(tlcPosition.y * BOX_TO_SCREEN),
-                (int)((tlcPosition.x * BOX_TO_SCREEN) + CORNER_LENGTH * Math.cos(topLeftCorner.getAngle())),
-                (int)((tlcPosition.y * BOX_TO_SCREEN) + CORNER_LENGTH * Math.sin(topLeftCorner.getAngle())));
-
-        Vector2 brbPos = bottomRightBase.getPosition();
-        graphics.drawLine((int)(brbPos.x * BOX_TO_SCREEN),
-                (int)(brbPos.y * BOX_TO_SCREEN),
-                (int)((brbPos.x * BOX_TO_SCREEN) + BASE_LENGTH * Math.cos(bottomRightBase.getAngle())),
-                (int)((brbPos.y * BOX_TO_SCREEN) + BASE_LENGTH * Math.sin(bottomRightBase.getAngle())));
-
-        Vector2 blbPos = bottomLeftBase.getPosition();
-        graphics.drawLine((int)(blbPos.x * BOX_TO_SCREEN),
-                (int)(blbPos.y * BOX_TO_SCREEN),
-                (int)((blbPos.x * BOX_TO_SCREEN) + BASE_LENGTH * Math.cos(bottomLeftBase.getAngle())),
-                (int)((blbPos.y * BOX_TO_SCREEN) + BASE_LENGTH * Math.sin(bottomLeftBase.getAngle())));
-
-        //draw flippers
-        Vector2 rFlipPos = rightFlipper.getPosition();
-        graphics.drawLine((int)(rFlipPos.x * BOX_TO_SCREEN),
-                (int)(rFlipPos.y * BOX_TO_SCREEN),
-                (int)((rFlipPos.x * BOX_TO_SCREEN) + FLIPPER_LENGTH * Math.cos(rightFlipper.getAngle())),
-                (int)((rFlipPos.y * BOX_TO_SCREEN) + FLIPPER_LENGTH * Math.sin(rightFlipper.getAngle())));
-
-        Vector2 lFlipPos = leftFlipper.getPosition();
-        graphics.drawLine((int)(lFlipPos.x * BOX_TO_SCREEN),
-                (int)(lFlipPos.y * BOX_TO_SCREEN),
-                (int)((lFlipPos.x * BOX_TO_SCREEN) + FLIPPER_LENGTH * Math.cos(leftFlipper.getAngle())),
-                (int)((lFlipPos.y * BOX_TO_SCREEN) + FLIPPER_LENGTH * Math.sin(leftFlipper.getAngle())));
-
-        //draw ball
-        graphics.fillOval((int) (ball.getPosition().x * BOX_TO_SCREEN - radius),
-                (int) (ball.getPosition().y * BOX_TO_SCREEN - radius),
-                radius * 2, radius * 2);
+        renderer.render((Graphics2D) graphics);
 
         repaint();
     }
