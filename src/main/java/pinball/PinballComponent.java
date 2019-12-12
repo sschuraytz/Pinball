@@ -3,9 +3,17 @@ package pinball;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.google.gson.Gson;
+import pinball.DTO.BodiesDTO;
+import pinball.DTO.BodyDTO;
 
 import javax.swing.JComponent;
 import java.awt.*;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
 
 public class PinballComponent extends JComponent {
 
@@ -24,84 +32,95 @@ public class PinballComponent extends JComponent {
     private final int radius = 30;
 
     private final World world;
-    private final Body bottom, right, left, top, divider;
-    private final Body topRightCorner
-            // , topLeftCorner, bottomRightBase, bottomLeftBase
-            ;
-    // private final Body rightFlipper, leftFlipper;
-    // private final Body ball;
+    private ArrayList<Body> bodies = new ArrayList<>();
+    private BodiesDTO bodiesDTO;
     private final Renderer renderer;
+
 
     PinballComponent()
     {
         world = new World(new Vector2(0, 9.8f), false);
         renderer = new Renderer(world, BOX_TO_SCREEN);
 
-        //set up all horizontal and vertical lines
-        bottom = createWall(100f * SCREEN_TO_BOX, (HEIGHT + 100) * SCREEN_TO_BOX, WIDTH * SCREEN_TO_BOX, 1f * SCREEN_TO_BOX);
-        top = createWall(100f * SCREEN_TO_BOX, 100f * SCREEN_TO_BOX, WIDTH * SCREEN_TO_BOX, 1f * SCREEN_TO_BOX);
-        left = createWall(100f * SCREEN_TO_BOX, 100f * SCREEN_TO_BOX, 1f * SCREEN_TO_BOX, HEIGHT * SCREEN_TO_BOX);
-        right = createWall((WIDTH + 100) * SCREEN_TO_BOX, 100f * SCREEN_TO_BOX, 1f * SCREEN_TO_BOX, HEIGHT * SCREEN_TO_BOX) ;
-        divider = createWall(1025 * SCREEN_TO_BOX, 300f * SCREEN_TO_BOX, 1f * SCREEN_TO_BOX, (HEIGHT - 200f) * SCREEN_TO_BOX);
 
-        //set up all diagonal lines
-        topRightCorner = createDiagonalLine(950f * SCREEN_TO_BOX, 100f * SCREEN_TO_BOX, CORNER_LENGTH * SCREEN_TO_BOX, 30);
-        // topLeftCorner = createDiagonalLine(250f * SCREEN_TO_BOX, 100f * SCREEN_TO_BOX, CORNER_LENGTH * SCREEN_TO_BOX, 150);
-        // bottomRightBase = createDiagonalLine(1025 * SCREEN_TO_BOX, 1230f * SCREEN_TO_BOX, BASE_LENGTH * SCREEN_TO_BOX, 145);
-        // bottomLeftBase = createDiagonalLine(100f * SCREEN_TO_BOX, 1230f * SCREEN_TO_BOX, BASE_LENGTH * SCREEN_TO_BOX, 35);
+        Gson gson = new Gson();
 
-        //set up flippers (static for now, but soon to be dynamic and jointed)
-        // rightFlipper = createDiagonalLine(735 * SCREEN_TO_BOX, 1435 * SCREEN_TO_BOX, FLIPPER_LENGTH * SCREEN_TO_BOX, 145);
-        // leftFlipper = createDiagonalLine(390 * SCREEN_TO_BOX, 1435 * SCREEN_TO_BOX, FLIPPER_LENGTH * SCREEN_TO_BOX, 35);
+        try (Reader reader = new FileReader("bodies.json"))
+        {
+            bodiesDTO = gson.fromJson(reader, BodiesDTO.class);
+            for(BodyDTO bodyDTO : bodiesDTO.getBodies())
+            {
+                bodies.add(createBody(bodyDTO));
+            }
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+    private Body createBody(BodyDTO bodyDTO)
+    {
+        Body body = null;
 
-        //cue the ball
-        // ball = createBall(1060 * SCREEN_TO_BOX, 1565 * SCREEN_TO_BOX, radius * SCREEN_TO_BOX);
+        switch(bodyDTO.getShapeType())
+        {
+            case BOX:
+                body = createWall(bodyDTO.getCoordinates(), bodyDTO.getLength(), bodyDTO.getHeight());
+                break;
+            case LINE:
+                body = createDiagonalLine(bodyDTO.getCoordinates(), bodyDTO.getLength(), bodyDTO.getAngle());
+                break;
+            case CIRCLE:
+                body = createBall(bodyDTO.getCoordinates(), bodyDTO.getRadius());
+                break;
+        }
+        return body;
     }
 
-    private Body createWall(float vX, float vY, float length, float height)
+    private Body createWall(float[] coordinates, float length, float height)
     {
         BodyDef bodyDef = new BodyDef();
-        bodyDef.position.set(new Vector2(vX, vY));
+        bodyDef.position.set(new Vector2(coordinates[0] * SCREEN_TO_BOX, coordinates[1] * SCREEN_TO_BOX));
         bodyDef.type = BodyDef.BodyType.StaticBody;
         Body wall = world.createBody(bodyDef);
 
         FixtureDef fixtureDef = new FixtureDef();
         PolygonShape shape = new PolygonShape();
-        shape.setAsBox(length, height);
+        shape.setAsBox(length * SCREEN_TO_BOX, height * SCREEN_TO_BOX);
+
         fixtureDef.shape = shape;
         fixtureDef.restitution = 1;
         wall.createFixture(fixtureDef);
         return wall;
     }
 
-    //This method is extremely similar to createWall(). It should probably be refactored into one thing.
-    private Body createDiagonalLine(float vX, float vY, float length, int angle)
+    private Body createDiagonalLine(float[] coordinates, float length, int angle)
     {
         BodyDef bodyDef = new BodyDef();
-        bodyDef.position.set(new Vector2(vX, vY));
+        bodyDef.position.set(new Vector2(coordinates[0] * SCREEN_TO_BOX, coordinates[1] * SCREEN_TO_BOX));
         bodyDef.type = BodyDef.BodyType.StaticBody;
         bodyDef.angle = angle * (MathUtils.PI/180);
         Body line = world.createBody(bodyDef);
 
         FixtureDef fixtureDef = new FixtureDef();
         PolygonShape shape = new PolygonShape();
-        shape.setAsBox(length, 1);
+        shape.setAsBox(length * SCREEN_TO_BOX, 1);
         fixtureDef.shape = shape;
         fixtureDef.restitution = 1;
         line.createFixture(fixtureDef);
         return line;
     }
 
-    private Body createBall(float vX, float vY, float radius)
+    private Body createBall(float[] coordinates, float radius)
     {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
-        bodyDef.position.set(new Vector2(vX, vY));
+        bodyDef.position.set(new Vector2(coordinates[0] * SCREEN_TO_BOX, coordinates[1] * SCREEN_TO_BOX));
         Body ball = world.createBody(bodyDef);
 
         FixtureDef fixtureDef = new FixtureDef();
         CircleShape shape = new CircleShape();
-        shape.setRadius(radius);
+        shape.setRadius(radius * SCREEN_TO_BOX);
         fixtureDef.shape = shape;
         fixtureDef.restitution = 1;
         ball.createFixture(fixtureDef);
@@ -109,6 +128,9 @@ public class PinballComponent extends JComponent {
         return ball;
     }
 
+
+    //All this drawing code is severely repetitive and deserves to be refactored.
+    //But hey, once the renderer comes around, we won't need it anyway.
     @Override
     protected void paintComponent(Graphics graphics)
     {
