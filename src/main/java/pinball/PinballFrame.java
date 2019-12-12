@@ -4,8 +4,9 @@ import javax.swing.*;
 import java.awt.*;
 
 public class PinballFrame extends JFrame {
+    PinballComponent pinballComponent = new PinballComponent();
     PinballKeyListeners pinballKeyListeners;
-    PinballController pinballController = new PinballController();
+    PinballController pinballController = new PinballController(pinballComponent);
 
     private PinballFrame()
     {
@@ -17,7 +18,7 @@ public class PinballFrame extends JFrame {
         this.addKeyListener(pinballKeyListeners);
 
         setLayout(new BorderLayout());
-        add(new PinballComponent(), BorderLayout.CENTER);
+        add(pinballComponent, BorderLayout.CENTER);
     }
 
     public static void main(String[] args) {

@@ -3,6 +3,8 @@ package pinball;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.physics.box2d.joints.MotorJoint;
+import com.badlogic.gdx.physics.box2d.joints.MotorJointDef;
 import com.badlogic.gdx.physics.box2d.joints.RevoluteJoint;
 import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef;
 
@@ -31,6 +33,11 @@ public class PinballComponent extends JComponent {
     private final Body rightFlipper, leftFlipper;
     private final Body ball;
 
+    private RevoluteJoint leftJoint, rightJoint;
+//    private MotorJoint leftJoint, rightJoint;
+
+    private Renderer renderer;
+
     PinballComponent()
     {
         world = new World(new Vector2(0, 9.8f), false);
@@ -55,20 +62,47 @@ public class PinballComponent extends JComponent {
         rightFlipper = createFlipper(735 * SCREEN_TO_BOX, 1435 * SCREEN_TO_BOX, FLIPPER_LENGTH * SCREEN_TO_BOX, 145);
         leftFlipper = createFlipper(390 * SCREEN_TO_BOX, 1435 * SCREEN_TO_BOX, FLIPPER_LENGTH * SCREEN_TO_BOX, 35);
 
-        createFlipperJoint(bottomRightBase, rightFlipper);
-        createFlipperJoint(bottomLeftBase, leftFlipper);
+        rightJoint = createFlipperJoint(bottomRightBase, rightFlipper);
+        leftJoint = createFlipperJoint(bottomLeftBase, leftFlipper);
 
         //cue the ball
         ball = createBall(1060 * SCREEN_TO_BOX, 1565 * SCREEN_TO_BOX, radius * SCREEN_TO_BOX);
     }
 
-    private void createFlipperJoint(Body base, Body flipper)
+   // private MotorJoint createFlipperJoint(Body base, Body flipper)
+    private RevoluteJoint createFlipperJoint(Body base, Body flipper)
     {
         RevoluteJointDef revoluteJointDef = new RevoluteJointDef();
-        revoluteJointDef.initialize(base, flipper, base.getWorldCenter());
+        revoluteJointDef.initialize(base, flipper, flipper.getPosition());
+
+        //the below code attempts to enforce limits on rotation about the joint, as well as powering it with a motor,
+        //which remains disabled until changeFlipper() is called (see below line 263)
+        revoluteJointDef.motorSpeed = (float)Math.PI * 2;
+        revoluteJointDef.maxMotorTorque = 10;
+
+        revoluteJointDef.enableMotor = false;
+
+        revoluteJointDef.enableLimit = true;
+        revoluteJointDef.lowerAngle = -.01f;
+        revoluteJointDef.upperAngle = .01f;
+
         RevoluteJoint joint = (RevoluteJoint) world.createJoint(revoluteJointDef);
-        joint.enableMotor(true);
-        joint.setMaxMotorTorque(100);
+
+        //playing around with the motor
+//        joint.enableMotor(true);
+//        joint.setMaxMotorTorque(1);
+//        joint.setLimits(-.78f, .78f);
+//        joint.enableLimit(true);
+
+        //maybe it should be a motor joint?
+//        MotorJointDef motorJointDef = new MotorJointDef();
+//        motorJointDef.maxForce = 100f;
+//        motorJointDef.maxTorque = 100f;
+//        motorJointDef.angularOffset = .5f;
+//        motorJointDef.initialize(base, flipper);
+//        MotorJoint joint = (MotorJoint) world.createJoint(motorJointDef);
+
+        return joint;
     }
 
     private Body createFlipper(float vX, float vY, float length, int angle)
@@ -139,16 +173,23 @@ public class PinballComponent extends JComponent {
         return ball;
     }
 
+
     //All this drawing code is severely repetitive and deserves to be refactored.
     //But hey, once the renderer comes around, we won't need it anyway.
     @Override
     protected void paintComponent(Graphics graphics)
     {
+        Graphics2D graphics2D = (Graphics2D) graphics; //this is for the renderer, eventually e/o will use it
+
         super.paintComponent(graphics);
 
         long currentTime = System.currentTimeMillis();
         world.step((currentTime - time)/1000f, 6, 2);
         time = currentTime;
+
+        //we're not yet using the renderer because it can't handle diagonal things
+//        renderer = new Renderer(world, BOX_TO_SCREEN);
+//        renderer.render(graphics2D);
 
         //draw all 'walls'
         graphics.fillRect((int)(bottom.getPosition().x * BOX_TO_SCREEN),
@@ -198,6 +239,11 @@ public class PinballComponent extends JComponent {
                 (int)((blbPos.x * BOX_TO_SCREEN) + BASE_LENGTH * Math.cos(bottomLeftBase.getAngle())),
                 (int)((blbPos.y * BOX_TO_SCREEN) + BASE_LENGTH * Math.sin(bottomLeftBase.getAngle())));
 
+        //draw ball
+        graphics.fillOval((int) (ball.getPosition().x * BOX_TO_SCREEN - radius),
+                (int) (ball.getPosition().y * BOX_TO_SCREEN - radius),
+                radius * 2, radius * 2);
+
         //draw flippers
         Vector2 rFlipPos = rightFlipper.getPosition();
         graphics.drawLine((int)(rFlipPos.x * BOX_TO_SCREEN),
@@ -211,11 +257,19 @@ public class PinballComponent extends JComponent {
                 (int)((lFlipPos.x * BOX_TO_SCREEN) + FLIPPER_LENGTH * Math.cos(leftFlipper.getAngle())),
                 (int)((lFlipPos.y * BOX_TO_SCREEN) + FLIPPER_LENGTH * Math.sin(leftFlipper.getAngle())));
 
-        //draw ball
-        graphics.fillOval((int) (ball.getPosition().x * BOX_TO_SCREEN - radius),
-                (int) (ball.getPosition().y * BOX_TO_SCREEN - radius),
-                radius * 2, radius * 2);
-
         repaint();
+    }
+
+    void changeFlipper(boolean left)
+    {
+        if (left)
+        {
+            leftFlipper.setAngularVelocity(-5);
+            leftJoint.enableMotor(true); //this doesn't appear to do anything...
+        }
+        else
+        {
+            rightFlipper.setAngularVelocity(5);
+        }
     }
 }
