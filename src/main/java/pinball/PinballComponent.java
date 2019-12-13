@@ -39,7 +39,7 @@ public class PinballComponent extends JComponent {
     PinballComponent()
     {
         world = new World(new Vector2(0, 9.8f), false);
-        world.setContactListener(new MyContactListener(this));
+        world.setContactListener(new BallContactListener(this));
         Gson gson = new Gson();
 
         try (Reader reader = new FileReader("bodies.json"))
@@ -71,6 +71,7 @@ public class PinballComponent extends JComponent {
                 body = createBall(bodyDTO.getCoordinates(), bodyDTO.getRadius());
                 break;
         }
+        body.setUserData(bodyDTO);
         return body;
     }
 

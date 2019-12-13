@@ -4,8 +4,8 @@ import com.badlogic.gdx.physics.box2d.*;
 
 import java.awt.event.ContainerListener;
 
-public class MyContactListener implements ContactListener {
-    public MyContactListener(PinballComponent pinballComponent) {
+public class BallContactListener implements ContactListener {
+    public BallContactListener(PinballComponent pinballComponent) {
     }
 
     @Override
@@ -16,12 +16,6 @@ public class MyContactListener implements ContactListener {
 
         if (fa == null || fb == null){
             return;
-        }
-        if (fa.getBody().getUserData() != null && fa.getBody().getUserData()==  "is bottom"  ){
-            hitBottom();
-        }
-        if (fb.getBody().getUserData() != null && fb.getBody().getUserData()==  "is bottom"  ){
-            hitBottom();
         }
         return;
         
