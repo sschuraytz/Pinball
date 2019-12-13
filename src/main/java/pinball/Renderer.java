@@ -43,7 +43,7 @@ public class Renderer {
                 renderCircle(graphics2D, position, (int) shape.getRadius());
                 break;
             case Polygon:
-                renderPolygon(graphics2D, (PolygonShape) shape, position);
+                renderPolygon(graphics2D, (PolygonShape) shape, position, angle);
                 break;
         }
     }
@@ -69,21 +69,29 @@ public class Renderer {
      * @param polygon the polygon to draw
      * @param position the center point of the polygon
      */
-    private void renderPolygon(Graphics2D graphics2D, PolygonShape polygon, Vector2 position) {
+    private void renderPolygon(Graphics2D graphics2D, PolygonShape polygon, Vector2 position, float angle) {
         int vertices = polygon.getVertexCount();
+
         if (vertices > 0) {
             int[] xCoordinates = new int[vertices];
             int[] yCoordinates = new int[vertices];
             Vector2 vector = new Vector2();
+            float centerX = position.x * BOX2D_TO_SCREEN;
+            float centerY = position.y * BOX2D_TO_SCREEN;
 
             for (int vertex = 0; vertex < vertices; vertex++) {
                 polygon.getVertex(vertex, vector);
                 // vector.x = distance from center of polygon to side of polygon
                 // vector.y = distance from center of polygon to top/bottom of polygon
-                xCoordinates[vertex] = Math.round((vector.x + position.x) * BOX2D_TO_SCREEN);
-                yCoordinates[vertex] = Math.round((vector.y + position.y) * BOX2D_TO_SCREEN);
+                xCoordinates[vertex] = Math.round(((vector.x + position.x) * BOX2D_TO_SCREEN) - centerX);
+                yCoordinates[vertex] = Math.round(((vector.y + position.y) * BOX2D_TO_SCREEN) - centerY);
             }
+
+            graphics2D.translate(centerX, centerY);
+            graphics2D.rotate(angle);
             graphics2D.drawPolygon(xCoordinates, yCoordinates, vertices);
+            graphics2D.rotate(-angle);
+            graphics2D.translate(-centerX, -centerY);
         }
     }
 }
