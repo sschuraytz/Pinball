@@ -3,6 +3,9 @@ package pinball;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.google.gson.Gson;
+import pinball.DTO.BodiesDTO;
+import pinball.DTO.BodyDTO;
 import com.badlogic.gdx.physics.box2d.joints.MotorJoint;
 import com.badlogic.gdx.physics.box2d.joints.MotorJointDef;
 import com.badlogic.gdx.physics.box2d.joints.RevoluteJoint;
@@ -10,6 +13,11 @@ import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef;
 
 import javax.swing.JComponent;
 import java.awt.*;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
 
 public class PinballComponent extends JComponent {
 
@@ -28,10 +36,9 @@ public class PinballComponent extends JComponent {
     private final int radius = 30;
 
     private final World world;
-    private final Body bottom, right, left, top, divider;
-    private final Body topRightCorner, topLeftCorner, bottomRightBase, bottomLeftBase;
-    private final Body rightFlipper, leftFlipper;
-    private final Body ball;
+    private ArrayList<Body> bodies = new ArrayList<>();
+    private BodiesDTO bodiesDTO;
+
 
     private RevoluteJoint leftJoint, rightJoint;
 //    private MotorJoint leftJoint, rightJoint;
@@ -42,34 +49,130 @@ public class PinballComponent extends JComponent {
     {
         world = new World(new Vector2(0, 9.8f), false);
 
-        //set up all horizontal and vertical lines
-        bottom = createWall(100f * SCREEN_TO_BOX, (HEIGHT + 100) * SCREEN_TO_BOX, WIDTH * SCREEN_TO_BOX, 1f * SCREEN_TO_BOX);
-        top = createWall(100f * SCREEN_TO_BOX, 100f * SCREEN_TO_BOX, WIDTH * SCREEN_TO_BOX, 1f * SCREEN_TO_BOX);
-        left = createWall(100f * SCREEN_TO_BOX, 100f * SCREEN_TO_BOX, 1f * SCREEN_TO_BOX, HEIGHT * SCREEN_TO_BOX);
-        right = createWall((WIDTH + 100) * SCREEN_TO_BOX, 100f * SCREEN_TO_BOX, 1f * SCREEN_TO_BOX, HEIGHT * SCREEN_TO_BOX) ;
-        divider = createWall(1025 * SCREEN_TO_BOX, 300f * SCREEN_TO_BOX, 1f * SCREEN_TO_BOX, (HEIGHT - 200f) * SCREEN_TO_BOX);
 
-        //set up all diagonal lines
-        topRightCorner = createDiagonalLine(950f * SCREEN_TO_BOX, 100f * SCREEN_TO_BOX, CORNER_LENGTH * SCREEN_TO_BOX, 30);
-        topLeftCorner = createDiagonalLine(250f * SCREEN_TO_BOX, 100f * SCREEN_TO_BOX, CORNER_LENGTH * SCREEN_TO_BOX, 150);
-        bottomRightBase = createDiagonalLine(1025 * SCREEN_TO_BOX, 1230f * SCREEN_TO_BOX, BASE_LENGTH * SCREEN_TO_BOX, 145);
-        bottomLeftBase = createDiagonalLine(100f * SCREEN_TO_BOX, 1230f * SCREEN_TO_BOX, BASE_LENGTH * SCREEN_TO_BOX, 35);
+        Gson gson = new Gson();
 
-        //set up flippers (static for now, but soon to be dynamic and jointed)
-//        rightFlipper = createDiagonalLine(735 * SCREEN_TO_BOX, 1435 * SCREEN_TO_BOX, FLIPPER_LENGTH * SCREEN_TO_BOX, 145);
-//        leftFlipper = createDiagonalLine(390 * SCREEN_TO_BOX, 1435 * SCREEN_TO_BOX, FLIPPER_LENGTH * SCREEN_TO_BOX, 35);
+        try (Reader reader = new FileReader("bodies.json"))
+        {
+            bodiesDTO = gson.fromJson(reader, BodiesDTO.class);
+            for(BodyDTO bodyDTO : bodiesDTO.getBodies())
+            {
+                bodies.add(createBody(bodyDTO));
+            }
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+    private Body createBody(BodyDTO bodyDTO)
+    {
+        Body body = null;
 
-        rightFlipper = createFlipper(735 * SCREEN_TO_BOX, 1435 * SCREEN_TO_BOX, FLIPPER_LENGTH * SCREEN_TO_BOX, 145);
-        leftFlipper = createFlipper(390 * SCREEN_TO_BOX, 1435 * SCREEN_TO_BOX, FLIPPER_LENGTH * SCREEN_TO_BOX, 35);
-
-        rightJoint = createFlipperJoint(bottomRightBase, rightFlipper);
-        leftJoint = createFlipperJoint(bottomLeftBase, leftFlipper);
-
-        //cue the ball
-        ball = createBall(1060 * SCREEN_TO_BOX, 1565 * SCREEN_TO_BOX, radius * SCREEN_TO_BOX);
+        switch(bodyDTO.getShapeType())
+        {
+            case BOX:
+                body = createWall(bodyDTO.getCoordinates(), bodyDTO.getLength(), bodyDTO.getHeight());
+                break;
+            case LINE:
+                body = createDiagonalLine(bodyDTO.getCoordinates(), bodyDTO.getLength(), bodyDTO.getAngle());
+                break;
+            case CIRCLE:
+                body = createBall(bodyDTO.getCoordinates(), bodyDTO.getRadius());
+                break;
+            case FLIPPER:
+                body = createFlipper(bodyDTO.getCoordinates(), bodyDTO.getJointCoordinates(), bodyDTO.getLength(), bodyDTO.getAngle());
+                break;
+        }
+        return body;
     }
 
-   // private MotorJoint createFlipperJoint(Body base, Body flipper)
+    private Body createWall(float[] coordinates, float length, float height)
+    {
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.position.set(new Vector2(coordinates[0] * SCREEN_TO_BOX, coordinates[1] * SCREEN_TO_BOX));
+        bodyDef.type = BodyDef.BodyType.StaticBody;
+        Body wall = world.createBody(bodyDef);
+
+        FixtureDef fixtureDef = new FixtureDef();
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(length * SCREEN_TO_BOX, height * SCREEN_TO_BOX);
+
+        fixtureDef.shape = shape;
+        fixtureDef.restitution = 1;
+        wall.createFixture(fixtureDef);
+        return wall;
+
+    }
+
+    private Body createDiagonalLine(float[] coordinates, float length, int angle)
+    {
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.position.set(new Vector2(coordinates[0] * SCREEN_TO_BOX, coordinates[1] * SCREEN_TO_BOX));
+        bodyDef.type = BodyDef.BodyType.StaticBody;
+        bodyDef.angle = angle * (MathUtils.PI/180);
+        Body line = world.createBody(bodyDef);
+
+        FixtureDef fixtureDef = new FixtureDef();
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(length * SCREEN_TO_BOX, 1);
+        fixtureDef.shape = shape;
+        fixtureDef.restitution = 1;
+        line.createFixture(fixtureDef);
+        return line;
+    }
+
+    private Body createBall(float[] coordinates, float radius)
+    {
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = BodyDef.BodyType.DynamicBody;
+        bodyDef.position.set(new Vector2(coordinates[0] * SCREEN_TO_BOX, coordinates[1] * SCREEN_TO_BOX));
+        Body ball = world.createBody(bodyDef);
+
+        FixtureDef fixtureDef = new FixtureDef();
+        CircleShape shape = new CircleShape();
+        shape.setRadius(radius * SCREEN_TO_BOX);
+        fixtureDef.shape = shape;
+        fixtureDef.restitution = 1;
+        ball.createFixture(fixtureDef);
+
+        return ball;
+    }
+
+    private Body createFlipper(float[] coordinates, float[] jointCoordinates, float length, int angle)
+    {
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.position.set(new Vector2(coordinates[0] * SCREEN_TO_BOX, coordinates[1] * SCREEN_TO_BOX));
+        bodyDef.type = BodyDef.BodyType.DynamicBody;
+        bodyDef.angle = angle * (MathUtils.PI/180);
+        Body flipper = world.createBody(bodyDef);
+
+        FixtureDef fixtureDef = new FixtureDef();
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(length * SCREEN_TO_BOX, 1);
+        fixtureDef.shape = shape;
+        fixtureDef.restitution = 1;
+        flipper.createFixture(fixtureDef);
+
+        BodyDef babyBodyDef = new BodyDef();
+        babyBodyDef.position.set(new Vector2(jointCoordinates[0] * SCREEN_TO_BOX, jointCoordinates[1] * SCREEN_TO_BOX));
+        babyBodyDef.type = BodyDef.BodyType.StaticBody;
+        babyBodyDef.angle = angle * (MathUtils.PI/180);
+        Body babyBody = world.createBody(babyBodyDef);
+
+        FixtureDef bbfixtureDef = new FixtureDef();
+        PolygonShape bbshape = new PolygonShape();
+        bbshape.setAsBox(length * SCREEN_TO_BOX, 1);
+        bbfixtureDef.shape = shape;
+        bbfixtureDef.restitution = 1;
+        babyBody.createFixture(bbfixtureDef);
+
+        createFlipperJoint(flipper, babyBody);
+
+        return flipper;
+    }
+
+    // private MotorJoint createFlipperJoint(Body base, Body flipper)
     private RevoluteJoint createFlipperJoint(Body base, Body flipper)
     {
         RevoluteJointDef revoluteJointDef = new RevoluteJointDef();
@@ -105,171 +208,61 @@ public class PinballComponent extends JComponent {
         return joint;
     }
 
-    private Body createFlipper(float vX, float vY, float length, int angle)
-    {
-        BodyDef bodyDef = new BodyDef();
-        bodyDef.position.set(new Vector2(vX, vY));
-        bodyDef.type = BodyDef.BodyType.DynamicBody;
-        bodyDef.angle = angle * (MathUtils.PI/180);
-        Body flipper = world.createBody(bodyDef);
-
-        FixtureDef fixtureDef = new FixtureDef();
-        PolygonShape shape = new PolygonShape();
-        shape.setAsBox(length, 1);
-        fixtureDef.shape = shape;
-        fixtureDef.restitution = 1;
-        flipper.createFixture(fixtureDef);
-        return flipper;
-    }
-
-    private Body createWall(float vX, float vY, float length, float height)
-    {
-        BodyDef bodyDef = new BodyDef();
-        bodyDef.position.set(new Vector2(vX, vY));
-        bodyDef.type = BodyDef.BodyType.StaticBody;
-        Body wall = world.createBody(bodyDef);
-
-        FixtureDef fixtureDef = new FixtureDef();
-        PolygonShape shape = new PolygonShape();
-        shape.setAsBox(length, height);
-        fixtureDef.shape = shape;
-        fixtureDef.restitution = 1;
-        wall.createFixture(fixtureDef);
-        return wall;
-    }
-
-    //This method is extremely similar to createWall(). It should probably be refactored into one thing.
-    private Body createDiagonalLine(float vX, float vY, float length, int angle)
-    {
-        BodyDef bodyDef = new BodyDef();
-        bodyDef.position.set(new Vector2(vX, vY));
-        bodyDef.type = BodyDef.BodyType.StaticBody;
-        bodyDef.angle = angle * (MathUtils.PI/180);
-        Body line = world.createBody(bodyDef);
-
-        FixtureDef fixtureDef = new FixtureDef();
-        PolygonShape shape = new PolygonShape();
-        shape.setAsBox(length, 1);
-        fixtureDef.shape = shape;
-        fixtureDef.restitution = 1;
-        line.createFixture(fixtureDef);
-        return line;
-    }
-
-    private Body createBall(float vX, float vY, float radius)
-    {
-        BodyDef bodyDef = new BodyDef();
-        bodyDef.type = BodyDef.BodyType.DynamicBody;
-        bodyDef.position.set(new Vector2(vX, vY));
-        Body ball = world.createBody(bodyDef);
-
-        FixtureDef fixtureDef = new FixtureDef();
-        CircleShape shape = new CircleShape();
-        shape.setRadius(radius);
-        fixtureDef.shape = shape;
-        fixtureDef.restitution = 1;
-        ball.createFixture(fixtureDef);
-
-        return ball;
-    }
-
 
     //All this drawing code is severely repetitive and deserves to be refactored.
     //But hey, once the renderer comes around, we won't need it anyway.
     @Override
     protected void paintComponent(Graphics graphics)
     {
-        Graphics2D graphics2D = (Graphics2D) graphics; //this is for the renderer, eventually e/o will use it
-
         super.paintComponent(graphics);
 
         long currentTime = System.currentTimeMillis();
         world.step((currentTime - time)/1000f, 6, 2);
         time = currentTime;
 
-        //we're not yet using the renderer because it can't handle diagonal things
-//        renderer = new Renderer(world, BOX_TO_SCREEN);
-//        renderer.render(graphics2D);
 
-        //draw all 'walls'
-        graphics.fillRect((int)(bottom.getPosition().x * BOX_TO_SCREEN),
-                (int)(bottom.getPosition().y * BOX_TO_SCREEN),
-                (int)WIDTH, 1);
+        BodyDTO[] _bodiesDTO = bodiesDTO.getBodies();
 
-        graphics.fillRect((int)(top.getPosition().x * BOX_TO_SCREEN),
-                (int)(top.getPosition().y * BOX_TO_SCREEN),
-                (int)WIDTH, 1);
+        for(int ix = 0; ix < this.bodies.size(); ++ix)
+        {
+            BodyType next = _bodiesDTO[ix].getBodyType();
+            Body body = this.bodies.get(ix);
+            Vector2 position = body.getPosition();
+            switch(next.getBodyName())
+            {
+                case "WALL":
+                    float length = _bodiesDTO[ix].getLength();
+                    float height = _bodiesDTO[ix].getHeight();
+                    graphics.fillRect((int)(position.x * BOX_TO_SCREEN),
+                            (int)(position.y * BOX_TO_SCREEN), (int)length, (int)height);
+                    break;
 
-        graphics.fillRect((int)(right.getPosition().x * BOX_TO_SCREEN),
-                (int)(right.getPosition().y * BOX_TO_SCREEN),
-                1, (int)HEIGHT);
+                case "BOTTOM_CORNER":
+                    graphics.drawLine((int)(position.x * BOX_TO_SCREEN),
+                    (int)(position.y * BOX_TO_SCREEN),
+                    (int)((position.x * BOX_TO_SCREEN) + BASE_LENGTH * Math.cos(body.getAngle())),
+                    (int)((position.y * BOX_TO_SCREEN) + BASE_LENGTH * Math.sin(body.getAngle())));
+                    break;
 
-        graphics.fillRect((int)(left.getPosition().x * BOX_TO_SCREEN),
-                (int)(left.getPosition().y * BOX_TO_SCREEN),
-                1, (int)HEIGHT);
-
-        graphics.fillRect((int)(divider.getPosition().x * BOX_TO_SCREEN),
-                (int)(divider.getPosition().y * BOX_TO_SCREEN),
-                1, (int)HEIGHT - 200);
-
-        //draw all diagonal lines
-        //formula for the end-point of a diagonal line:
-        //(x2, y2) = (x1 + length ⋅ cos(angle), y1 + length ⋅ sin(angle))
-        Vector2 trcPosition = topRightCorner.getPosition();
-        graphics.drawLine((int)(trcPosition.x * BOX_TO_SCREEN),
-                (int)(trcPosition.y * BOX_TO_SCREEN),
-                (int)((trcPosition.x * BOX_TO_SCREEN) + CORNER_LENGTH * Math.cos(topRightCorner.getAngle())),
-                (int)((trcPosition.y * BOX_TO_SCREEN) + CORNER_LENGTH * Math.sin(topRightCorner.getAngle())));
-
-        Vector2 tlcPosition = topLeftCorner.getPosition();
-        graphics.drawLine((int)(tlcPosition.x * BOX_TO_SCREEN),
-                (int)(tlcPosition.y * BOX_TO_SCREEN),
-                (int)((tlcPosition.x * BOX_TO_SCREEN) + CORNER_LENGTH * Math.cos(topLeftCorner.getAngle())),
-                (int)((tlcPosition.y * BOX_TO_SCREEN) + CORNER_LENGTH * Math.sin(topLeftCorner.getAngle())));
-
-        Vector2 brbPos = bottomRightBase.getPosition();
-        graphics.drawLine((int)(brbPos.x * BOX_TO_SCREEN),
-                (int)(brbPos.y * BOX_TO_SCREEN),
-                (int)((brbPos.x * BOX_TO_SCREEN) + BASE_LENGTH * Math.cos(bottomRightBase.getAngle())),
-                (int)((brbPos.y * BOX_TO_SCREEN) + BASE_LENGTH * Math.sin(bottomRightBase.getAngle())));
-
-        Vector2 blbPos = bottomLeftBase.getPosition();
-        graphics.drawLine((int)(blbPos.x * BOX_TO_SCREEN),
-                (int)(blbPos.y * BOX_TO_SCREEN),
-                (int)((blbPos.x * BOX_TO_SCREEN) + BASE_LENGTH * Math.cos(bottomLeftBase.getAngle())),
-                (int)((blbPos.y * BOX_TO_SCREEN) + BASE_LENGTH * Math.sin(bottomLeftBase.getAngle())));
-
-        //draw ball
-        graphics.fillOval((int) (ball.getPosition().x * BOX_TO_SCREEN - radius),
-                (int) (ball.getPosition().y * BOX_TO_SCREEN - radius),
-                radius * 2, radius * 2);
-
-        //draw flippers
-        Vector2 rFlipPos = rightFlipper.getPosition();
-        graphics.drawLine((int)(rFlipPos.x * BOX_TO_SCREEN),
-                (int)(rFlipPos.y * BOX_TO_SCREEN),
-                (int)((rFlipPos.x * BOX_TO_SCREEN) + FLIPPER_LENGTH * Math.cos(rightFlipper.getAngle())),
-                (int)((rFlipPos.y * BOX_TO_SCREEN) + FLIPPER_LENGTH * Math.sin(rightFlipper.getAngle())));
-
-        Vector2 lFlipPos = leftFlipper.getPosition();
-        graphics.drawLine((int)(lFlipPos.x * BOX_TO_SCREEN),
-                (int)(lFlipPos.y * BOX_TO_SCREEN),
-                (int)((lFlipPos.x * BOX_TO_SCREEN) + FLIPPER_LENGTH * Math.cos(leftFlipper.getAngle())),
-                (int)((lFlipPos.y * BOX_TO_SCREEN) + FLIPPER_LENGTH * Math.sin(leftFlipper.getAngle())));
+                case "TOP_CORNER":
+                    graphics.drawLine((int)(position.x * BOX_TO_SCREEN),
+                    (int)(position.y * BOX_TO_SCREEN),
+                    (int)((position.x * BOX_TO_SCREEN) + CORNER_LENGTH * Math.cos(body.getAngle())),
+                    (int)((position.y * BOX_TO_SCREEN) + CORNER_LENGTH * Math.sin(body.getAngle())));
+                    break;
+                case "FLIPPER":
+                    graphics.drawLine((int)(position.x * BOX_TO_SCREEN),
+                    (int)(position.y * BOX_TO_SCREEN),
+                    (int)((position.x * BOX_TO_SCREEN) + FLIPPER_LENGTH * Math.cos(body.getAngle())),
+                    (int)((position.y * BOX_TO_SCREEN) + FLIPPER_LENGTH * Math.sin(body.getAngle())));
+                    break;
+                case "BALL":
+                    graphics.fillOval((int) (position.x * BOX_TO_SCREEN - radius),
+                    (int) (position.y * BOX_TO_SCREEN - radius),radius * 2, radius * 2);
+                    break;
+            }
+        }
 
         repaint();
-    }
-
-    void changeFlipper(boolean left)
-    {
-        if (left)
-        {
-            leftFlipper.setAngularVelocity(-5);
-            leftJoint.enableMotor(true); //this doesn't appear to do anything...
-        }
-        else
-        {
-            rightFlipper.setAngularVelocity(5);
-        }
     }
 }
