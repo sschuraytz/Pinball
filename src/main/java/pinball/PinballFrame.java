@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class PinballFrame extends JFrame {
-    PinballComponent pinballComponent = new PinballComponent();
+    PinballComponent pinballComponent = new PinballComponent(new JSONBodiesParser());
     PinballKeyListeners pinballKeyListeners;
     PinballController pinballController = new PinballController(pinballComponent);
 

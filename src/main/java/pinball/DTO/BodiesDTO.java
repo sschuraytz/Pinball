@@ -1,7 +1,9 @@
 package pinball.DTO;
 
 public class BodiesDTO {
-    public BodyDTO[] getBodies() {
+
+    public BodyDTO[] getBodies()
+    {
         return bodies;
     }
 
