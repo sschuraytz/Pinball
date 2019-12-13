@@ -39,11 +39,7 @@ public class PinballComponent extends JComponent {
     private ArrayList<Body> bodies = new ArrayList<>();
     private BodiesDTO bodiesDTO;
 
-
-    private RevoluteJoint leftJoint, rightJoint;
-//    private MotorJoint leftJoint, rightJoint;
-
-    private Renderer renderer;
+    private ArrayList<RevoluteJoint> flipperJoints = new ArrayList<>();
 
     PinballComponent()
     {
@@ -167,7 +163,7 @@ public class PinballComponent extends JComponent {
         bbfixtureDef.restitution = 1;
         babyBody.createFixture(bbfixtureDef);
 
-        createFlipperJoint(flipper, babyBody);
+        flipperJoints.add(createFlipperJoint(flipper, babyBody));
 
         return flipper;
     }
@@ -264,5 +260,18 @@ public class PinballComponent extends JComponent {
         }
 
         repaint();
+    }
+    void changeFlipper(boolean left)
+    {
+        if (left)
+        {
+//            leftFlipper.setAngularVelocity(-5);
+            flipperJoints.get(0).enableMotor(true); //this doesn't appear to do anything...
+        }
+        else
+        {
+//            rightFlipper.setAngularVelocity(5);
+            flipperJoints.get(1).enableMotor(true); //this doesn't appear to do anything...
+        }
     }
 }
