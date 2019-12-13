@@ -6,6 +6,10 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.google.gson.Gson;
 import pinball.DTO.BodiesDTO;
 import pinball.DTO.BodyDTO;
+import com.badlogic.gdx.physics.box2d.joints.MotorJoint;
+import com.badlogic.gdx.physics.box2d.joints.MotorJointDef;
+import com.badlogic.gdx.physics.box2d.joints.RevoluteJoint;
+import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef;
 
 import javax.swing.JComponent;
 import java.awt.*;
@@ -35,6 +39,7 @@ public class PinballComponent extends JComponent {
     private ArrayList<Body> bodies = new ArrayList<>();
     private BodiesDTO bodiesDTO;
 
+    private ArrayList<RevoluteJoint> flipperJoints = new ArrayList<>();
 
     PinballComponent()
     {
@@ -70,6 +75,9 @@ public class PinballComponent extends JComponent {
                 break;
             case CIRCLE:
                 body = createBall(bodyDTO.getCoordinates(), bodyDTO.getRadius());
+                break;
+            case FLIPPER:
+                body = createFlipper(bodyDTO.getCoordinates(), bodyDTO.getJointCoordinates(), bodyDTO.getLength(), bodyDTO.getAngle());
                 break;
         }
         return body;
@@ -125,6 +133,75 @@ public class PinballComponent extends JComponent {
         ball.createFixture(fixtureDef);
 
         return ball;
+    }
+
+    private Body createFlipper(float[] coordinates, float[] jointCoordinates, float length, int angle)
+    {
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.position.set(new Vector2(coordinates[0] * SCREEN_TO_BOX, coordinates[1] * SCREEN_TO_BOX));
+        bodyDef.type = BodyDef.BodyType.DynamicBody;
+        bodyDef.angle = angle * (MathUtils.PI/180);
+        Body flipper = world.createBody(bodyDef);
+
+        FixtureDef fixtureDef = new FixtureDef();
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(length * SCREEN_TO_BOX, 1);
+        fixtureDef.shape = shape;
+        fixtureDef.restitution = 1;
+        flipper.createFixture(fixtureDef);
+
+        BodyDef babyBodyDef = new BodyDef();
+        babyBodyDef.position.set(new Vector2(jointCoordinates[0] * SCREEN_TO_BOX, jointCoordinates[1] * SCREEN_TO_BOX));
+        babyBodyDef.type = BodyDef.BodyType.StaticBody;
+        babyBodyDef.angle = angle * (MathUtils.PI/180);
+        Body babyBody = world.createBody(babyBodyDef);
+
+        FixtureDef bbfixtureDef = new FixtureDef();
+        PolygonShape bbshape = new PolygonShape();
+        bbshape.setAsBox(length * SCREEN_TO_BOX, 1);
+        bbfixtureDef.shape = shape;
+        bbfixtureDef.restitution = 1;
+        babyBody.createFixture(bbfixtureDef);
+
+        flipperJoints.add(createFlipperJoint(flipper, babyBody));
+
+        return flipper;
+    }
+
+    // private MotorJoint createFlipperJoint(Body base, Body flipper)
+    private RevoluteJoint createFlipperJoint(Body base, Body flipper)
+    {
+        RevoluteJointDef revoluteJointDef = new RevoluteJointDef();
+        revoluteJointDef.initialize(base, flipper, flipper.getPosition());
+
+        //the below code attempts to enforce limits on rotation about the joint, as well as powering it with a motor,
+        //which remains disabled until changeFlipper() is called (see below line 263)
+        revoluteJointDef.motorSpeed = (float)Math.PI * 2;
+        revoluteJointDef.maxMotorTorque = 10;
+
+        revoluteJointDef.enableMotor = false;
+
+        revoluteJointDef.enableLimit = true;
+        revoluteJointDef.lowerAngle = -.01f;
+        revoluteJointDef.upperAngle = .01f;
+
+        RevoluteJoint joint = (RevoluteJoint) world.createJoint(revoluteJointDef);
+
+        //playing around with the motor
+//        joint.enableMotor(true);
+//        joint.setMaxMotorTorque(1);
+//        joint.setLimits(-.78f, .78f);
+//        joint.enableLimit(true);
+
+        //maybe it should be a motor joint?
+//        MotorJointDef motorJointDef = new MotorJointDef();
+//        motorJointDef.maxForce = 100f;
+//        motorJointDef.maxTorque = 100f;
+//        motorJointDef.angularOffset = .5f;
+//        motorJointDef.initialize(base, flipper);
+//        MotorJoint joint = (MotorJoint) world.createJoint(motorJointDef);
+
+        return joint;
     }
 
 
@@ -184,5 +261,17 @@ public class PinballComponent extends JComponent {
 
         repaint();
     }
+    void changeFlipper(boolean left)
+    {
+        if (left)
+        {
+//            leftFlipper.setAngularVelocity(-5);
+            flipperJoints.get(0).enableMotor(true); //this doesn't appear to do anything...
+        }
+        else
+        {
+//            rightFlipper.setAngularVelocity(5);
+            flipperJoints.get(1).enableMotor(true); //this doesn't appear to do anything...
+        }
+    }
 }
-
