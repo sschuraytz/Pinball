@@ -2,7 +2,7 @@ package pinball;
 
 public enum ShapeType
 {
-    BOX("BOX"), CIRCLE("CIRCLE"), LINE("LINE");
+    BOX("BOX"), CIRCLE("CIRCLE"), LINE("LINE"), FLIPPER("FLIPPER");
     private String shapeName;
 
     private ShapeType(String shapeName) {
