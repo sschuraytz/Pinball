@@ -8,9 +8,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import java.awt.*;
 
-/**
- * TODO unit test renderCircle() and renderPolygon()
- */
+
 public class Renderer {
 
     private final World world;
@@ -49,7 +47,6 @@ public class Renderer {
     }
 
     /**
-     *
      * @param graphics2D
      * @param position the center of the circle
      * @param radius
@@ -64,7 +61,6 @@ public class Renderer {
     }
 
     /**
-     * TODO handle rotations in a different PR
      * @param graphics2D
      * @param polygon the polygon to draw
      * @param position the center point of the polygon
@@ -84,8 +80,8 @@ public class Renderer {
                 polygon.getVertex(vertex, vector);
                 // vector.x = distance from center of polygon to side of polygon
                 // vector.y = distance from center of polygon to top/bottom of polygon
-                xCoordinates[vertex] = Math.round(((vector.x + position.x) * BOX2D_TO_SCREEN) - centerX);
-                yCoordinates[vertex] = Math.round(((vector.y + position.y) * BOX2D_TO_SCREEN) - centerY);
+                xCoordinates[vertex] = Math.round(vector.x * BOX2D_TO_SCREEN);
+                yCoordinates[vertex] = Math.round(vector.y * BOX2D_TO_SCREEN);
             }
 
             graphics2D.translate(centerX, centerY);
