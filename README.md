@@ -19,7 +19,6 @@ Containing some, but not all, of the components below:
 To-Do List
 ================
 
-- Update Renderer to handle rotation
 - Add Flippers with Gear Joint
 - Resize Pinball board to size of window
 
