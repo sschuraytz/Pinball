@@ -6,11 +6,8 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.google.gson.Gson;
 import pinball.DTO.BodiesDTO;
 import pinball.DTO.BodyDTO;
-import com.badlogic.gdx.physics.box2d.joints.MotorJoint;
-import com.badlogic.gdx.physics.box2d.joints.MotorJointDef;
 import com.badlogic.gdx.physics.box2d.joints.RevoluteJoint;
 import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef;
-
 import javax.swing.JComponent;
 import java.awt.*;
 import java.io.*;
@@ -214,5 +211,4 @@ public class PinballComponent extends JComponent {
         renderer.render((Graphics2D) graphics);
         repaint();
     }
-
 }
