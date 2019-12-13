@@ -14,11 +14,11 @@ public class PinballController {
     }
     protected void leftFlipper()
     {
-//        pinballComponent.changeFlipper(true);
+        pinballComponent.changeFlipper(true);
         System.out.println("left flipper");
     }
     protected void rightFlipper() {
-//        pinballComponent.changeFlipper(false);
+        pinballComponent.changeFlipper(false);
         System.out.println("right flipper");
     }
     protected void ballPressure() {
