@@ -68,6 +68,7 @@ public class Renderer {
      * @param graphics2D
      * @param polygon the polygon to draw
      * @param position the center point of the polygon
+     * @param angle the angle of rotation
      */
     private void renderPolygon(Graphics2D graphics2D, PolygonShape polygon, Vector2 position, float angle) {
         int vertices = polygon.getVertexCount();
