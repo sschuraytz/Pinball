@@ -32,28 +32,29 @@ public class Renderer {
     }
 
     private void render(Graphics2D graphics2D, Body body) {
-        Vector2 position = body.getPosition();
         Shape shape = body.getFixtureList().get(0).getShape();
         Shape.Type type = shape.getType();
-        float angle = body.getAngle();
+
         switch (type) {
             case Circle:
-                renderCircle(graphics2D, position, (int) shape.getRadius());
+                renderCircle(graphics2D, body, (int) shape.getRadius());
                 break;
             case Polygon:
-                renderPolygon(graphics2D, (PolygonShape) shape, position, angle);
+                renderPolygon(graphics2D, body, (PolygonShape) shape);
                 break;
         }
     }
 
     /**
      * @param graphics2D
-     * @param position the center of the circle
+     * @param body the body to display
      * @param radius
      */
-    private void renderCircle(Graphics2D graphics2D, Vector2 position, int radius) {
+    private void renderCircle(Graphics2D graphics2D, Body body, int radius) {
+        Vector2 position = body.getPosition(); // the center of the circle
         int screenRadius = Math.round(radius * BOX2D_TO_SCREEN);
         int diameter = screenRadius * 2;
+
         graphics2D.fillOval(Math.round(position.x * BOX2D_TO_SCREEN) - screenRadius,
                 Math.round(position.y * BOX2D_TO_SCREEN) - screenRadius,
                 diameter,
@@ -62,11 +63,12 @@ public class Renderer {
 
     /**
      * @param graphics2D
-     * @param polygon the polygon to draw
-     * @param position the center point of the polygon
-     * @param angle the angle of rotation
+     * @param body the body to render
+     * @param polygon the Shape to draw
      */
-    private void renderPolygon(Graphics2D graphics2D, PolygonShape polygon, Vector2 position, float angle) {
+    private void renderPolygon(Graphics2D graphics2D, Body body, PolygonShape polygon) {
+        Vector2 position = body.getPosition(); // the center point of the polygon
+        float angle = body.getAngle(); // the angle of rotation
         int vertices = polygon.getVertexCount();
 
         if (vertices > 0) {
