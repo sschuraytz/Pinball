@@ -17,7 +17,7 @@ public class PinballFrame extends JFrame {
         this.addKeyListener(pinballKeyListeners);
 
         setLayout(new BorderLayout());
-        add(new PinballComponent(), BorderLayout.CENTER);
+        add(new PinballComponent(new JSONBodiesParser()), BorderLayout.CENTER);
     }
 
     public static void main(String[] args) {

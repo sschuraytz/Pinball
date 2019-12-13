@@ -36,26 +36,18 @@ public class PinballComponent extends JComponent {
     private BodiesDTO bodiesDTO;
 
 
-    PinballComponent()
+    PinballComponent(JSONBodiesParser jsonParser)
     {
         world = new World(new Vector2(0, 9.8f), false);
+        bodiesDTO = jsonParser.getBodiesDTO();
 
-
-        Gson gson = new Gson();
-
-        try (Reader reader = new FileReader("bodies.json"))
-        {
-            bodiesDTO = gson.fromJson(reader, BodiesDTO.class);
-            for(BodyDTO bodyDTO : bodiesDTO.getBodies())
-            {
+        if(bodiesDTO != null) {
+            for (BodyDTO bodyDTO : bodiesDTO.getBodies()) {
                 bodies.add(createBody(bodyDTO));
             }
         }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
     }
+
     private Body createBody(BodyDTO bodyDTO)
     {
         Body body = null;
