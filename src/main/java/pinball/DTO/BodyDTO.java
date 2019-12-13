@@ -8,6 +8,7 @@ public class BodyDTO {
      BodyType bodyType;
      ShapeType shapeType;
      float[] coordinates;
+     float[] jointCoordinates;
      Float length;
      Float height;
      Integer angle;
@@ -24,6 +25,8 @@ public class BodyDTO {
     public void setCoordinates(float[] coordinates) {
         this.coordinates = coordinates;
     }
+
+    public void setJointCoordinates(float[] jointCoordinates) {this.jointCoordinates = jointCoordinates;}
 
     public void setLength(Float length) {
         this.length = length;
@@ -52,6 +55,8 @@ public class BodyDTO {
     public float[] getCoordinates() {
         return coordinates;
     }
+
+    public float[] getJointCoordinates() { return jointCoordinates; }
 
     public Float getLength() {
         return length;

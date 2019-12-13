@@ -66,15 +66,17 @@
 
     {
       "bodyType": "FLIPPER",
-      "shapeType": "LINE",
+      "shapeType": "FLIPPER",
       "coordinates": [735,1435],
+      "jointCoordinates": [735,1435],
       "length": 120,
       "angle": 145
     },
     {
       "bodyType": "FLIPPER",
-      "shapeType": "LINE",
+      "shapeType": "FLIPPER",
       "coordinates": [390,1435],
+      "jointCoordinates": [390,1435],
       "length": 120,
       "angle": 35
     },
