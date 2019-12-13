@@ -6,42 +6,25 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.google.gson.Gson;
 import pinball.DTO.BodiesDTO;
 import pinball.DTO.BodyDTO;
-
 import javax.swing.JComponent;
 import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
 
 public class PinballComponent extends JComponent {
 
     private long time;
-
-    private static final float WIDTH = 1000;
-    private static final float HEIGHT = 500;
-
-    private static final float CORNER_LENGTH = 175;
-    private static final float BASE_LENGTH = 350;
-    private static final float FLIPPER_LENGTH = 120;
-
     private static final float BOX_TO_SCREEN = 10f;
     private static final float SCREEN_TO_BOX = 1f / BOX_TO_SCREEN;
-
-    private final int radius = 30;
-
     private final World world;
     private ArrayList<Body> bodies = new ArrayList<>();
     private BodiesDTO bodiesDTO;
     private final Renderer renderer;
 
-
     PinballComponent()
     {
         world = new World(new Vector2(0, 9.8f), false);
         renderer = new Renderer(world, BOX_TO_SCREEN);
-
 
         Gson gson = new Gson();
 
@@ -128,9 +111,6 @@ public class PinballComponent extends JComponent {
         return ball;
     }
 
-
-    //All this drawing code is severely repetitive and deserves to be refactored.
-    //But hey, once the renderer comes around, we won't need it anyway.
     @Override
     protected void paintComponent(Graphics graphics)
     {
@@ -139,9 +119,7 @@ public class PinballComponent extends JComponent {
         long currentTime = System.currentTimeMillis();
         world.step((currentTime - time)/1000f, 6, 2);
         time = currentTime;
-
         renderer.render((Graphics2D) graphics);
-
         repaint();
     }
 }

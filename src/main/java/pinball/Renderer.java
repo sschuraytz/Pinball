@@ -70,39 +70,28 @@ public class Renderer {
      * @param position the center point of the polygon
      */
     private void renderPolygon(Graphics2D graphics2D, PolygonShape polygon, Vector2 position, float angle) {
-        // graphics2D.translate(position.x, -position.y);
-        // graphics2D.rotate(angle);
-
         int vertices = polygon.getVertexCount();
+
         if (vertices > 0) {
-            // body.setTransform(position, angle);
             int[] xCoordinates = new int[vertices];
             int[] yCoordinates = new int[vertices];
             Vector2 vector = new Vector2();
+            float centerX = position.x * BOX2D_TO_SCREEN;
+            float centerY = position.y * BOX2D_TO_SCREEN;
 
             for (int vertex = 0; vertex < vertices; vertex++) {
                 polygon.getVertex(vertex, vector);
                 // vector.x = distance from center of polygon to side of polygon
                 // vector.y = distance from center of polygon to top/bottom of polygon
-                xCoordinates[vertex] = Math.round((vector.x + position.x) * BOX2D_TO_SCREEN);
-                yCoordinates[vertex] = Math.round((vector.y + position.y) * BOX2D_TO_SCREEN);
-
+                xCoordinates[vertex] = Math.round(((vector.x + position.x) * BOX2D_TO_SCREEN) - centerX);
+                yCoordinates[vertex] = Math.round(((vector.y + position.y) * BOX2D_TO_SCREEN) - centerY);
             }
-            // boolean rotated = angle != MathUtils.PI;
-            // System.out.println(rotated);
-            // if (rotated) {
 
-
-
-            /// why doesn't it work??!!
-
-            graphics2D.rotate(angle, position.x * BOX2D_TO_SCREEN, position.y * BOX2D_TO_SCREEN);
-            // }
+            graphics2D.translate(centerX, centerY);
+            graphics2D.rotate(angle);
             graphics2D.drawPolygon(xCoordinates, yCoordinates, vertices);
-            // if (rotated) {
             graphics2D.rotate(-angle);
-            // }
+            graphics2D.translate(-centerX, -centerY);
         }
-        // graphics2D.translate();
     }
 }
