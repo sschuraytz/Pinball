@@ -68,13 +68,18 @@ public class Renderer {
      */
     private void renderPolygon(Graphics2D graphics2D, Body body, PolygonShape polygon) {
         Vector2 position = body.getPosition(); // the center point of the polygon
-        float angle = body.getAngle(); // the angle of rotation
+        float angleRadians = body.getAngle(); // the angle of rotation in radians
         int vertices = polygon.getVertexCount();
 
         if (vertices > 0) {
+
+            // create arrays to store vertices of polygon
             int[] xCoordinates = new int[vertices];
             int[] yCoordinates = new int[vertices];
-            Vector2 vector = new Vector2();
+
+            Vector2 vector = new Vector2(); // Vector object needed to get vertices of polygon
+
+            // store center of polygon for future use, display, translation, and rotation is based around this
             float centerX = position.x * BOX2D_TO_SCREEN;
             float centerY = position.y * BOX2D_TO_SCREEN;
 
@@ -87,9 +92,9 @@ public class Renderer {
             }
 
             graphics2D.translate(centerX, centerY);
-            graphics2D.rotate(angle);
+            graphics2D.rotate(angleRadians);
             graphics2D.drawPolygon(xCoordinates, yCoordinates, vertices);
-            graphics2D.rotate(-angle);
+            graphics2D.rotate(-angleRadians);
             graphics2D.translate(-centerX, -centerY);
         }
     }
