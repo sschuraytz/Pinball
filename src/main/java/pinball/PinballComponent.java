@@ -9,7 +9,7 @@ import pinball.DTO.BodyDTO;
 import com.badlogic.gdx.physics.box2d.joints.RevoluteJoint;
 import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef;
 
-import javax.swing.JComponent;
+import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
@@ -24,17 +24,29 @@ public class PinballComponent extends JComponent {
     private BodiesDTO bodiesDTO;
     private final Renderer renderer;
     private ArrayList<RevoluteJoint> flipperJoints = new ArrayList<>();
+    private Body ball = null;
 
-    PinballComponent(JSONBodiesParser jsonParser) {
+    PinballComponent(JSONBodiesParser jsonParser, JButton launchButton) {
         world = new World(new Vector2(0, 9.8f), false);
         renderer = new Renderer(world, BOX_TO_SCREEN);
-
         bodiesDTO = jsonParser.getBodiesDTO();
+
         if (bodiesDTO != null) {
             for (BodyDTO bodyDTO : bodiesDTO.getBodies()) {
-                bodies.add(createBody(bodyDTO));
+                Body body = createBody(bodyDTO);
+                if (body.getUserData() == BodyType.BALL) {
+                    ball = body;
+                }
+                bodies.add(body);
             }
         }
+
+        launchButton.addActionListener(e ->
+                ball.applyLinearImpulse(
+                        0 * SCREEN_TO_BOX,
+                        500 * SCREEN_TO_BOX,
+                        ball.getPosition().x,
+                        ball.getPosition().y, true));
     }
 
     private Body createBody(BodyDTO bodyDTO) {
@@ -54,6 +66,7 @@ public class PinballComponent extends JComponent {
                 body = createFlipper(bodyDTO.getCoordinates(), bodyDTO.getJointCoordinates(), bodyDTO.getLength(), bodyDTO.getAngle());
                 break;
         }
+        body.setUserData(bodyDTO.getBodyType());
         return body;
     }
 
