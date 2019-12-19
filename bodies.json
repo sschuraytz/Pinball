@@ -1,7 +1,7 @@
 {
   "bodies": [
     {
-      "bodyType": "WALL",
+      "bodyType": "FLOOR",
       "shapeType": "BOX",
       "coordinates": [100,1600],
       "length": 1000,

@@ -1,8 +1,12 @@
 package pinball;
 
 import com.badlogic.gdx.physics.box2d.*;
+import pinball.DTO.BodyDTO;
 
 import java.awt.event.ContainerListener;
+
+import static pinball.BodyType.BALL;
+import static pinball.BodyType.FLOOR;
 
 public class BallContactListener implements ContactListener {
     public BallContactListener(PinballComponent pinballComponent) {
@@ -12,10 +16,15 @@ public class BallContactListener implements ContactListener {
     public void beginContact(Contact contact) {
         Fixture fa = contact.getFixtureA();
         Fixture fb = contact.getFixtureB();
-        //System.out.println("contact");
-
         if (fa == null || fb == null){
             return;
+        }
+        BodyDTO userDataA = (BodyDTO) fa.getBody().getUserData();
+        BodyDTO userDataB = (BodyDTO) fb.getBody().getUserData();
+        if ( userDataA.getBodyType() == FLOOR && userDataB.getBodyType() == BALL
+         || userDataA.getBodyType() == BALL && userDataB.getBodyType() == FLOOR)
+        {
+            hitBottom();
         }
         return;
         

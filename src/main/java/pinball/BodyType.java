@@ -5,7 +5,9 @@ public enum BodyType {
     WALL("WALL"),
     BOTTOM_CORNER("BOTTOM_CORNER"),
     TOP_CORNER("TOP_CORNER"),
-    BALL("BALL");
+    BALL("BALL"),
+    FLOOR ("FLOOR");
+
 
 
 
