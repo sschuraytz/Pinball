@@ -4,7 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 
 public class PinballFrame extends JFrame {
-    PinballComponent pinballComponent = new PinballComponent(new JSONBodiesParser());
+    JButton launchButton = new JButton("Launch!");
+    PinballComponent pinballComponent = new PinballComponent(new JSONBodiesParser(), launchButton);
     PinballKeyListeners pinballKeyListeners;
     PinballController pinballController = new PinballController(pinballComponent);
 
@@ -19,6 +20,7 @@ public class PinballFrame extends JFrame {
 
         setLayout(new BorderLayout());
         add(pinballComponent, BorderLayout.CENTER);
+        add(launchButton, BorderLayout.NORTH);
     }
 
     public static void main(String[] args) {

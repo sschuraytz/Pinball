@@ -26,7 +26,7 @@ public class PinballComponent extends JComponent {
     private ArrayList<RevoluteJoint> flipperJoints = new ArrayList<>();
     private Body ball = null;
 
-    PinballComponent(JSONBodiesParser jsonParser) {
+    PinballComponent(JSONBodiesParser jsonParser, JButton launchButton) {
         world = new World(new Vector2(0, 9.8f), false);
         renderer = new Renderer(world, BOX_TO_SCREEN);
         bodiesDTO = jsonParser.getBodiesDTO();
@@ -41,9 +41,7 @@ public class PinballComponent extends JComponent {
             }
         }
 
-        JButton button = new JButton("Launch!");
-        add(button);
-        button.addActionListener(e ->
+        launchButton.addActionListener(e ->
                 ball.applyLinearImpulse(
                         0 * SCREEN_TO_BOX,
                         500 * SCREEN_TO_BOX,
