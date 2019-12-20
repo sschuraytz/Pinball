@@ -18,11 +18,13 @@ public class PinballComponent extends JComponent {
 
     private long time;
     private static final float BOX_TO_SCREEN = 10f;
-    private static final float SCREEN_TO_BOX = 1f / BOX_TO_SCREEN;
+    private static final float SCREEN_TO_BOX =0.04f; // 1f / BOX_TO_SCREEN;
     private final World world;
     private ArrayList<Body> bodies = new ArrayList<>();
     private BodiesDTO bodiesDTO;
     private final Renderer renderer;
+    private Body leftFlipper;
+    private Body rightFlipper;
     private ArrayList<RevoluteJoint> flipperJoints = new ArrayList<>();
 
     PinballComponent(JSONBodiesParser jsonParser) {
@@ -51,7 +53,7 @@ public class PinballComponent extends JComponent {
                 body = createBall(bodyDTO.getCoordinates(), bodyDTO.getRadius());
                 break;
             case FLIPPER:
-                body = createFlipper(bodyDTO.getCoordinates(), bodyDTO.getJointCoordinates(), bodyDTO.getLength(), bodyDTO.getAngle());
+                body = createFlipper(bodyDTO, bodyDTO.getCoordinates(), bodyDTO.getJointCoordinates(), bodyDTO.getLength(), bodyDTO.getAngle());
                 break;
         }
         return body;
@@ -105,34 +107,40 @@ public class PinballComponent extends JComponent {
         return ball;
     }
 
-    private Body createFlipper(float[] coordinates, float[] jointCoordinates, float length, int angle) {
-        BodyDef bodyDef = new BodyDef();
-        bodyDef.position.set(new Vector2(coordinates[0] * SCREEN_TO_BOX, coordinates[1] * SCREEN_TO_BOX));
-        bodyDef.type = BodyDef.BodyType.DynamicBody;
-        bodyDef.angle = angle * (MathUtils.PI / 180);
-        Body flipper = world.createBody(bodyDef);
+    private Body createFlipper(BodyDTO bodyDTO, float[] coordinates, float[] jointCoordinates, float length, int angle) {
+        BodyDef flipperBodyDef = new BodyDef();
+        flipperBodyDef.position.set(new Vector2(coordinates[0] * SCREEN_TO_BOX, coordinates[1] * SCREEN_TO_BOX));
+        flipperBodyDef.type = BodyDef.BodyType.DynamicBody;
+        flipperBodyDef.angle = angle * (MathUtils.PI / 180);
+        Body flipper = world.createBody(flipperBodyDef);
+        if(bodyDTO.getBodyType() == BodyType.LEFT_FLIPPER)
+        {
+            leftFlipper = flipper;
+        }
+        else { rightFlipper = flipper; }
 
-        FixtureDef fixtureDef = new FixtureDef();
+        FixtureDef flipperFixDef = new FixtureDef();
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(length * SCREEN_TO_BOX, 1);
-        fixtureDef.shape = shape;
-        fixtureDef.restitution = 1;
-        flipper.createFixture(fixtureDef);
+        flipperFixDef.shape = shape;
+        flipperFixDef.restitution = 1;
+        flipper.createFixture(flipperFixDef);
 
-        BodyDef babyBodyDef = new BodyDef();
-        babyBodyDef.position.set(new Vector2(jointCoordinates[0] * SCREEN_TO_BOX, jointCoordinates[1] * SCREEN_TO_BOX));
-        babyBodyDef.type = BodyDef.BodyType.StaticBody;
-        babyBodyDef.angle = angle * (MathUtils.PI / 180);
-        Body babyBody = world.createBody(babyBodyDef);
+        BodyDef anchorLocationDef = new BodyDef();
+        anchorLocationDef.position.set(new Vector2(jointCoordinates[0] * SCREEN_TO_BOX, jointCoordinates[1] * SCREEN_TO_BOX));
+        anchorLocationDef.type = BodyDef.BodyType.StaticBody;
+        anchorLocationDef.angle = angle * (MathUtils.PI / 180);
+        Body anchorLocation = world.createBody(anchorLocationDef);
 
-        FixtureDef bbfixtureDef = new FixtureDef();
-        PolygonShape bbshape = new PolygonShape();
-        bbshape.setAsBox(length * SCREEN_TO_BOX, 1);
-        bbfixtureDef.shape = shape;
-        bbfixtureDef.restitution = 1;
-        babyBody.createFixture(bbfixtureDef);
+        FixtureDef anchorFixtureDef = new FixtureDef();
+        PolygonShape anchorShape = new PolygonShape();
+        anchorShape.setAsBox(length * SCREEN_TO_BOX, 1);
+        anchorFixtureDef.shape = shape;
+        anchorFixtureDef.restitution = 1;
+        anchorLocation.createFixture(anchorFixtureDef);
 
-        flipperJoints.add(createFlipperJoint(flipper, babyBody));
+       // flipperJoints.add(createFlipperJoint(flipper, anchorLocation));
+        flipperJoints.add(createFlipperJoint(anchorLocation, flipper));
 
         return flipper;
     }
@@ -174,11 +182,11 @@ public class PinballComponent extends JComponent {
 
     void changeFlipper(boolean left) {
         if (left) {
-//            leftFlipper.setAngularVelocity(-5);
-            flipperJoints.get(0).enableMotor(true); //this doesn't appear to do anything...
+            leftFlipper.setAngularVelocity(-5);
+//            flipperJoints.get(0).enableMotor(true); //this doesn't appear to do anything...
         } else {
-//            rightFlipper.setAngularVelocity(5);
-            flipperJoints.get(1).enableMotor(true); //this doesn't appear to do anything...
+            rightFlipper.setAngularVelocity(5);
+//            flipperJoints.get(1).enableMotor(true); //this doesn't appear to do anything...
         }
     }
 

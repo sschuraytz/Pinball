@@ -1,11 +1,14 @@
 package pinball;
 
 public enum BodyType {
-    FLIPPER("FLIPPER"),
+    LEFT_FLIPPER("LEFT_FLIPPER"),
+    RIGHT_FLIPPER("RIGHT_FLIPPER"),
+    STOPPER("STOPPER"),
     WALL("WALL"),
     BOTTOM_CORNER("BOTTOM_CORNER"),
     TOP_CORNER("TOP_CORNER"),
     BALL("BALL");
+
 
 
 
